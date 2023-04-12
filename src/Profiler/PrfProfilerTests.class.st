@@ -36,8 +36,28 @@ PrfProfilerTests >> tearDown [
 PrfProfilerTests >> testDummyABarExecution [
 	|dummyA|
 	dummyA := PrfDummyClassA new.
-	dummyA bar: 5.
+	dummyA bar: false.
 	self assert: dummyAFooHandler executionCount  equals: 0.
+	self assert: dummyABarHandler executionCount equals: 1.
+	
+]
+
+{ #category : #tests }
+PrfProfilerTests >> testDummyABarReset [
+	|dummyA|
+	dummyA := PrfDummyClassA new.
+	dummyA bar: false.
+	dummyABarHandler reset.
+	self assert: dummyABarHandler executionCount equals: 0.
+	
+]
+
+{ #category : #tests }
+PrfProfilerTests >> testDummyABarWithSubFooExecution [
+	|dummyA|
+	dummyA := PrfDummyClassA new.
+	dummyA bar: true.
+	self assert: dummyAFooHandler executionCount  equals: 1.
 	self assert: dummyABarHandler executionCount equals: 1.
 	
 ]
@@ -49,5 +69,15 @@ PrfProfilerTests >> testDummyAFooExecution [
 	dummyA foo.
 	self assert: dummyAFooHandler executionCount equals: 1.
 	self assert: dummyABarHandler executionCount equals: 0.
+	
+]
+
+{ #category : #tests }
+PrfProfilerTests >> testDummyAFooReset [
+	|dummyA|
+	dummyA := PrfDummyClassA new.
+	dummyA foo.
+	dummyAFooHandler reset.
+	self assert: dummyAFooHandler executionCount equals: 0.
 	
 ]

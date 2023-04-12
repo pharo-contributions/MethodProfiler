@@ -5,7 +5,9 @@ Class {
 }
 
 { #category : #accessing }
-PrfDummyClassA >> bar: test [
+PrfDummyClassA >> bar: isExecutingFoo [
+	isExecutingFoo ifTrue: [ self foo ].
+	
 ]
 
 { #category : #accessing }

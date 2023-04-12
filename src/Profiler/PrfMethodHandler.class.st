@@ -11,8 +11,7 @@ Class {
 { #category : #creation }
 PrfMethodHandler class >> createForMethod: aMethod [
 	|handler|
-	handler := PrfMethodHandler basicNew.
-	handler executionCount: 0.
+	handler := PrfMethodHandler new.
 	handler method: aMethod.
 	^handler
 ]
@@ -25,11 +24,6 @@ PrfMethodHandler >> afterMethod [
 { #category : #accessing }
 PrfMethodHandler >> executionCount [
 	^executionCount 
-]
-
-{ #category : #accessing }
-PrfMethodHandler >> executionCount: aNumber [
-	executionCount := aNumber 
 ]
 
 { #category : #initialization }
@@ -45,4 +39,9 @@ PrfMethodHandler >> method [
 { #category : #accessing }
 PrfMethodHandler >> method: aMethod [
 	method := aMethod 
+]
+
+{ #category : #accessing }
+PrfMethodHandler >> reset [ 
+	executionCount := 0
 ]
