@@ -1,39 +1,31 @@
 Class {
-	#name : #PrfProfilerTests,
+	#name : #PrfMethodCounterTests,
 	#superclass : #TestCase,
 	#instVars : [
 		'dummyAFooHandler',
-		'dummyAFooProxy',
-		'dummyABarHandler',
-		'dummyABarProxy'
+		'dummyABarHandler'
 	],
 	#category : #Profiler
 }
 
 { #category : #running }
-PrfProfilerTests >> setUp [
-	dummyAFooHandler := PrfMethodHandler createForMethod: PrfDummyClassA >> #foo.
-	dummyAFooProxy := MpMethodProxy 
-		onMethod: PrfDummyClassA >> #foo 
-		handler: dummyAFooHandler.
-	dummyAFooProxy install.
+PrfMethodCounterTests >> setUp [
+	dummyAFooHandler := PrfMethodCounter createForMethod: PrfDummyClassA >> #foo.
+	dummyAFooHandler enable.
 	
-	dummyABarHandler := PrfMethodHandler createForMethod: PrfDummyClassA >> #bar:.
-	dummyABarProxy := MpMethodProxy 
-		onMethod: PrfDummyClassA >> #bar:
-		handler: dummyABarHandler.
-	dummyABarProxy install.
+	dummyABarHandler := PrfMethodCounter createForMethod: PrfDummyClassA >> #bar:.
+	dummyABarHandler enable.
 	
 ]
 
 { #category : #running }
-PrfProfilerTests >> tearDown [
-	dummyAFooProxy uninstall.
-	dummyABarProxy uninstall.
+PrfMethodCounterTests >> tearDown [
+	dummyAFooHandler disable.
+	dummyABarHandler disable.
 ]
 
 { #category : #tests }
-PrfProfilerTests >> testDummyABarExecution [
+PrfMethodCounterTests >> testDummyABarExecution [
 	|dummyA|
 	dummyA := PrfDummyClassA new.
 	dummyA bar: false.
@@ -43,7 +35,7 @@ PrfProfilerTests >> testDummyABarExecution [
 ]
 
 { #category : #tests }
-PrfProfilerTests >> testDummyABarReset [
+PrfMethodCounterTests >> testDummyABarReset [
 	|dummyA|
 	dummyA := PrfDummyClassA new.
 	dummyA bar: false.
@@ -53,7 +45,7 @@ PrfProfilerTests >> testDummyABarReset [
 ]
 
 { #category : #tests }
-PrfProfilerTests >> testDummyABarWithSubFooExecution [
+PrfMethodCounterTests >> testDummyABarWithSubFooExecution [
 	|dummyA|
 	dummyA := PrfDummyClassA new.
 	dummyA bar: true.
@@ -63,7 +55,7 @@ PrfProfilerTests >> testDummyABarWithSubFooExecution [
 ]
 
 { #category : #tests }
-PrfProfilerTests >> testDummyAFooExecution [
+PrfMethodCounterTests >> testDummyAFooExecution [
 	|dummyA|
 	dummyA := PrfDummyClassA new.
 	dummyA foo.
@@ -73,7 +65,7 @@ PrfProfilerTests >> testDummyAFooExecution [
 ]
 
 { #category : #tests }
-PrfProfilerTests >> testDummyAFooReset [
+PrfMethodCounterTests >> testDummyAFooReset [
 	|dummyA|
 	dummyA := PrfDummyClassA new.
 	dummyA foo.
