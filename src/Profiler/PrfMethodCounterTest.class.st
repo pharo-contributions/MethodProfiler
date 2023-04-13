@@ -1,5 +1,5 @@
 Class {
-	#name : #PrfMethodCounterTests,
+	#name : #PrfMethodCounterTest,
 	#superclass : #TestCase,
 	#instVars : [
 		'dummyAFooHandler',
@@ -9,23 +9,25 @@ Class {
 }
 
 { #category : #running }
-PrfMethodCounterTests >> setUp [
-	dummyAFooHandler := PrfMethodCounter createForMethod: PrfDummyClassA >> #foo.
-	dummyAFooHandler enable.
+PrfMethodCounterTest >> setUp [
+	super setUp.
 	
+	dummyAFooHandler := PrfMethodCounter createForMethod: PrfDummyClassA >> #foo.
 	dummyABarHandler := PrfMethodCounter createForMethod: PrfDummyClassA >> #bar:.
-	dummyABarHandler enable.
 	
 ]
 
 { #category : #running }
-PrfMethodCounterTests >> tearDown [
+PrfMethodCounterTest >> tearDown [
+	
 	dummyAFooHandler disable.
 	dummyABarHandler disable.
+	
+	super tearDown.
 ]
 
 { #category : #tests }
-PrfMethodCounterTests >> testDummyABarExecution [
+PrfMethodCounterTest >> testDummyABarExecution [
 	|dummyA|
 	dummyA := PrfDummyClassA new.
 	dummyA bar: false.
@@ -35,7 +37,7 @@ PrfMethodCounterTests >> testDummyABarExecution [
 ]
 
 { #category : #tests }
-PrfMethodCounterTests >> testDummyABarReset [
+PrfMethodCounterTest >> testDummyABarReset [
 	|dummyA|
 	dummyA := PrfDummyClassA new.
 	dummyA bar: false.
@@ -45,7 +47,7 @@ PrfMethodCounterTests >> testDummyABarReset [
 ]
 
 { #category : #tests }
-PrfMethodCounterTests >> testDummyABarWithSubFooExecution [
+PrfMethodCounterTest >> testDummyABarWithSubFooExecution [
 	|dummyA|
 	dummyA := PrfDummyClassA new.
 	dummyA bar: true.
@@ -55,7 +57,7 @@ PrfMethodCounterTests >> testDummyABarWithSubFooExecution [
 ]
 
 { #category : #tests }
-PrfMethodCounterTests >> testDummyAFooExecution [
+PrfMethodCounterTest >> testDummyAFooExecution [
 	|dummyA|
 	dummyA := PrfDummyClassA new.
 	dummyA foo.
@@ -65,7 +67,7 @@ PrfMethodCounterTests >> testDummyAFooExecution [
 ]
 
 { #category : #tests }
-PrfMethodCounterTests >> testDummyAFooReset [
+PrfMethodCounterTest >> testDummyAFooReset [
 	|dummyA|
 	dummyA := PrfDummyClassA new.
 	dummyA foo.
