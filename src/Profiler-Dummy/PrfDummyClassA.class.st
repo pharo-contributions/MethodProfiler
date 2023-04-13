@@ -1,7 +1,7 @@
 Class {
 	#name : #PrfDummyClassA,
 	#superclass : #Object,
-	#category : #Profiler
+	#category : #'Profiler-Dummy'
 }
 
 { #category : #accessing }

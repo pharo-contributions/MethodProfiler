@@ -13,7 +13,9 @@ PrfMethodCounterTest >> setUp [
 	super setUp.
 	
 	dummyAFooHandler := PrfMethodCounter createForMethod: PrfDummyClassA >> #foo.
+	dummyAFooHandler enable.
 	dummyABarHandler := PrfMethodCounter createForMethod: PrfDummyClassA >> #bar:.
+	dummyABarHandler enable.
 	
 ]
 

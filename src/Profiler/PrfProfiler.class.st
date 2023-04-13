@@ -8,12 +8,26 @@ Class {
 }
 
 { #category : #control }
+PrfProfiler >> addClass: aClass [
+	|methods|
+	methods := aClass methodDictionary.
+	methods do: [ :method | self addMethod: method ]
+]
+
+{ #category : #control }
 PrfProfiler >> addMethod: aMethod [
-	(self canProfile: aMethod) ifFalse: [ 
-		PrfProfilingDomainError new signal: 'This method is not profilable' ].
-	counters 
-		at: (self methodKey: aMethod) 
-		ifAbsentPut: (PrfMethodCounter createForMethod: aMethod)
+	(self canProfile: aMethod) ifTrue: [ 
+		counters 
+			at: (self methodKey: aMethod) 
+			ifAbsentPut: (PrfMethodCounter createForMethod: aMethod) ].
+	
+]
+
+{ #category : #control }
+PrfProfiler >> addPackage: aPackage [
+	|classes|
+	classes := aPackage classes.
+	classes do: [ :class | self addClass: class ]
 ]
 
 { #category : #private }
@@ -22,9 +36,11 @@ PrfProfiler >> canProfile: aMethod [
 ]
 
 { #category : #control }
-PrfProfiler >> close [ 
-	counters do: [ :counter | counter disable].
-	counters removeAll 
+PrfProfiler >> excludeClass: aClass [
+	|methods|
+	methods := aClass methodDictionary.
+	methods do: [ :method |
+		self excludeMethod: method ]
 ]
 
 { #category : #control }
@@ -37,6 +53,13 @@ PrfProfiler >> excludeMethod: aMethod [
 			counter disable.
 			counters removeKey: key.
 			 ]
+]
+
+{ #category : #control }
+PrfProfiler >> excludePackage: aPackage [
+	|classes|
+	classes := aPackage classes.
+	classes do: [ :class | self excludeClass: class ]
 ]
 
 { #category : #initialization }
@@ -87,4 +110,21 @@ PrfProfiler >> methodExecutionCount: aMethod [
 { #category : #private }
 PrfProfiler >> methodKey: aMethod [
 	^{aMethod realClass . aMethod selector}
+]
+
+{ #category : #accessing }
+PrfProfiler >> profile: aBlock [
+	self start.
+	aBlock ensure: [ 
+		self stop ]
+]
+
+{ #category : #lifecycle }
+PrfProfiler >> start [
+	counters do: [ :counter | counter enable].
+]
+
+{ #category : #lifecycle }
+PrfProfiler >> stop [ 
+	counters do: [ :counter | counter disable].
 ]

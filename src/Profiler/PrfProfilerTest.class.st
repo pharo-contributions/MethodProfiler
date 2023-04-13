@@ -17,9 +17,36 @@ PrfProfilerTest >> setUp [
 { #category : #running }
 PrfProfilerTest >> tearDown [ 
 
-	profiler close.
+	profiler stop.
 	
 	super tearDown.
+]
+
+{ #category : #tests }
+PrfProfilerTest >> testClassExclude [
+	profiler addMethod: PrfDummyClassA >> #foo.
+	profiler excludeClass: PrfDummyClassA.
+	self deny: (profiler isProfiled: PrfDummyClassA >> #foo).
+]
+
+{ #category : #tests }
+PrfProfilerTest >> testClassForbiddenDomainError [
+	profiler addClass: PrfProfiler.
+	self deny: (profiler isProfiled: PrfProfiler >> #methodExecutionCount:)
+]
+
+{ #category : #tests }
+PrfProfilerTest >> testClassMethodExecutionCount [
+	profiler addClass: PrfDummyClassA.
+	profiler start.
+	PrfDummyClassA new foo.
+	self assert: (profiler methodExecutionCount: PrfDummyClassA >> #foo) equals: 1.
+]
+
+{ #category : #tests }
+PrfProfilerTest >> testClassProfiled [
+	profiler addClass: PrfDummyClassA.
+	self assert: (profiler isProfiled: PrfDummyClassA >> #foo).
 ]
 
 { #category : #tests }
@@ -31,15 +58,41 @@ PrfProfilerTest >> testExclude [
 
 { #category : #tests }
 PrfProfilerTest >> testForbiddenDomainError [
-	self 
-		should: [ profiler addMethod: PrfProfiler >> #methodExecutionCount: ] 
-		raise: PrfProfilingDomainError .
+	profiler addMethod: PrfProfiler >> #methodExecutionCount:.
+	self deny: (profiler isProfiled: PrfProfiler >> #methodExecutionCount:)
 ]
 
 { #category : #tests }
 PrfProfilerTest >> testNotProfiled [
 	profiler addMethod: PrfDummyClassA >> #bar:.
 	self deny: (profiler isProfiled: PrfDummyClassA >> #foo)
+]
+
+{ #category : #tests }
+PrfProfilerTest >> testPackageExclude [
+	profiler addPackage: ('Profiler-Dummy' asPackage).
+	profiler excludeClass: PrfDummyClassA.
+	self deny: (profiler isProfiled: PrfDummyClassA >> #foo).
+]
+
+{ #category : #tests }
+PrfProfilerTest >> testPackageForbiddenDomainError [
+	profiler addPackage: ('Profiler' asPackage).
+	self deny: (profiler isProfiled: PrfProfiler >> #methodExecutionCount:)
+]
+
+{ #category : #tests }
+PrfProfilerTest >> testPackageMethodExecutionCount [
+	profiler addPackage: ('Profiler-Dummy' asPackage).
+	profiler start.
+	PrfDummyClassA new foo.
+	self assert: (profiler methodExecutionCount: PrfDummyClassA >> #foo) equals: 1.
+]
+
+{ #category : #tests }
+PrfProfilerTest >> testPackageProfiled [
+	profiler addPackage: ('Profiler-Dummy' asPackage).
+	self assert: (profiler isProfiled: PrfDummyClassA >> #foo).
 ]
 
 { #category : #tests }
@@ -52,6 +105,7 @@ PrfProfilerTest >> testProfiled [
 PrfProfilerTest >> testSimpleMethodExecutionCount [
 	profiler addMethod: PrfDummyClassA >> #foo.
 	profiler addMethod: PrfDummyClassA >> #bar:.
+	profiler start.
 	PrfDummyClassA new foo.
 	self assert: (profiler methodExecutionCount: PrfDummyClassA >> #foo) equals: 1.
 ]

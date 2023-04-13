@@ -13,7 +13,6 @@ PrfMethodCounter class >> createForMethod: aMethod [
 	|handler|
 	handler := PrfMethodCounter new.
 	handler method: aMethod.
-	handler enable.
 	^handler
 ]
 
