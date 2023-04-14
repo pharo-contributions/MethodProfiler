@@ -23,6 +23,14 @@ PrfProfilerTest >> tearDown [
 ]
 
 { #category : #tests }
+PrfProfilerTest >> testBlockMethodExecutionCount [
+	profiler addClass: PrfDummyClassA.
+	profiler profile: [
+		PrfDummyClassA new foo. ].
+	self assert: (profiler methodExecutionCount: PrfDummyClassA >> #foo) equals: 1.
+]
+
+{ #category : #tests }
 PrfProfilerTest >> testClassExclude [
 	profiler addMethod: PrfDummyClassA >> #foo.
 	profiler excludeClass: PrfDummyClassA.
@@ -47,6 +55,13 @@ PrfProfilerTest >> testClassMethodExecutionCount [
 PrfProfilerTest >> testClassProfiled [
 	profiler addClass: PrfDummyClassA.
 	self assert: (profiler isProfiled: PrfDummyClassA >> #foo).
+]
+
+{ #category : #tests }
+PrfProfilerTest >> testExceptionInBlockProfile [
+	profiler addMethod: (PrfDummyClassA >> #foo).
+	self should: [ profiler profile: [ 1 error: 'test' ] ] raise: Error.
+	self deny: (profiler isProfilingEnabled: (PrfDummyClassA >> #foo))
 ]
 
 { #category : #tests }
@@ -99,6 +114,15 @@ PrfProfilerTest >> testPackageProfiled [
 PrfProfilerTest >> testProfiled [
 	profiler addMethod: PrfDummyClassA >> #foo.
 	self assert: (profiler isProfiled: PrfDummyClassA >> #foo).
+]
+
+{ #category : #tests }
+PrfProfilerTest >> testReset [
+	profiler addMethod: PrfDummyClassA >> #foo.
+	profiler start.
+	PrfDummyClassA new foo.
+	profiler reset.
+	self assert: (profiler methodExecutionCount: PrfDummyClassA >> #foo) equals: 0.
 ]
 
 { #category : #tests }

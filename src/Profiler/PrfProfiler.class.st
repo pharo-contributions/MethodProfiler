@@ -7,14 +7,14 @@ Class {
 	#category : #Profiler
 }
 
-{ #category : #control }
+{ #category : #scope }
 PrfProfiler >> addClass: aClass [
 	|methods|
 	methods := aClass methodDictionary.
 	methods do: [ :method | self addMethod: method ]
 ]
 
-{ #category : #control }
+{ #category : #scope }
 PrfProfiler >> addMethod: aMethod [
 	(self canProfile: aMethod) ifTrue: [ 
 		counters 
@@ -23,7 +23,7 @@ PrfProfiler >> addMethod: aMethod [
 	
 ]
 
-{ #category : #control }
+{ #category : #scope }
 PrfProfiler >> addPackage: aPackage [
 	|classes|
 	classes := aPackage classes.
@@ -35,7 +35,28 @@ PrfProfiler >> canProfile: aMethod [
 	^(aMethod realClass ~= PrfProfiler) and: (aMethod realClass ~= PrfMethodCounter)
 ]
 
-{ #category : #control }
+{ #category : #display }
+PrfProfiler >> displayResults [
+
+	|keys|
+	keys := counters keys asOrderedCollection.
+	keys sort: [ :key1 :key2 |  
+		((counters at: key1) executionCount) > ((counters at: key2) executionCount)].
+	
+	Transcript show: '--- Profiling summary ---'; cr.
+	keys
+		do: [ :methodKey |
+			Transcript
+				show: (methodKey at: 1);
+				show: ' >> #';
+				show: (methodKey at: 2);
+				show: ' -> ';
+				show: (counters at: methodKey) executionCount;
+				cr].
+	Transcript cr.
+]
+
+{ #category : #scope }
 PrfProfiler >> excludeClass: aClass [
 	|methods|
 	methods := aClass methodDictionary.
@@ -43,7 +64,7 @@ PrfProfiler >> excludeClass: aClass [
 		self excludeMethod: method ]
 ]
 
-{ #category : #control }
+{ #category : #scope }
 PrfProfiler >> excludeMethod: aMethod [
 	|key|
 	key := self methodKey: aMethod.
@@ -55,7 +76,7 @@ PrfProfiler >> excludeMethod: aMethod [
 			 ]
 ]
 
-{ #category : #control }
+{ #category : #scope }
 PrfProfiler >> excludePackage: aPackage [
 	|classes|
 	classes := aPackage classes.
@@ -67,31 +88,36 @@ PrfProfiler >> initialize [
 	counters := Dictionary new.
 ]
 
-{ #category : #control }
+{ #category : #scope }
 PrfProfiler >> isNotProfiled: aMethod [
 	^(self isProfiled: aMethod) not
 ]
 
-{ #category : #control }
+{ #category : #scope }
 PrfProfiler >> isProfiled: aMethod [
 	^counters includesKey: (self methodKey: aMethod)
 ]
 
-{ #category : #control }
+{ #category : #scope }
+PrfProfiler >> isProfilingEnabled: aMethod [
+	^(counters at: (self methodKey: aMethod)) isEnabled
+]
+
+{ #category : #scope }
 PrfProfiler >> method: aMethod ifNotProfiled: aBlock [
 	^(self isProfiled: aMethod)
 		ifTrue: [ self ]
 		ifFalse: [ aBlock value ]
 ]
 
-{ #category : #control }
+{ #category : #scope }
 PrfProfiler >> method: aMethod ifProfiled: aBlock [
 	^(self isProfiled: aMethod)
 		ifTrue: [ aBlock value ]
 		ifFalse: [ self ]
 ]
 
-{ #category : #control }
+{ #category : #scope }
 PrfProfiler >> method: aMethod ifProfiled: profiledBlock ifNotProfiled: notProfiledBlock [
 	^(self isProfiled: aMethod)
 		ifTrue: [ profiledBlock value ]
@@ -117,6 +143,11 @@ PrfProfiler >> profile: aBlock [
 	self start.
 	aBlock ensure: [ 
 		self stop ]
+]
+
+{ #category : #lifecycle }
+PrfProfiler >> reset [
+	counters do: [ :counter | counter reset ]
 ]
 
 { #category : #lifecycle }

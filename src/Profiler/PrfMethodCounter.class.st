@@ -51,6 +51,11 @@ PrfMethodCounter >> initialize [
 ]
 
 { #category : #accessing }
+PrfMethodCounter >> isEnabled [
+	^proxy isInstalled 
+]
+
+{ #category : #accessing }
 PrfMethodCounter >> method [
 	^method 
 ]
