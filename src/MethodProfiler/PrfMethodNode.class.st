@@ -3,7 +3,8 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'method',
-		'methodCalls'
+		'methodCalls',
+		'timesCalled'
 	],
 	#category : #MethodProfiler
 }
@@ -17,6 +18,11 @@ PrfMethodNode class >> forMethod: aMethod [
 ]
 
 { #category : #accessing }
+PrfMethodNode >> addCall [
+	timesCalled := timesCalled + 1.
+]
+
+{ #category : #accessing }
 PrfMethodNode >> addCallTo: aMethod [
 	methodCalls add: aMethod
 ]
@@ -24,6 +30,7 @@ PrfMethodNode >> addCallTo: aMethod [
 { #category : #initialization }
 PrfMethodNode >> initialize [ 
 	methodCalls := Bag new.
+	timesCalled := 0
 ]
 
 { #category : #accessing }
@@ -57,7 +64,14 @@ PrfMethodNode >> printString [
 
 { #category : #accessing }
 PrfMethodNode >> removeAllCalls [
-	methodCalls removeAll
+	methodCalls removeAll.
+	timesCalled := 0
+]
+
+{ #category : #accessing }
+PrfMethodNode >> timesCalled [
+
+	^ timesCalled
 ]
 
 { #category : #accessing }

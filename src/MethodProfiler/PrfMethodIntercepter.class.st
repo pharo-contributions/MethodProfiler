@@ -31,6 +31,7 @@ PrfMethodIntercepter >> beforeMethod [
 		(profiler nodes at: (profiler callStack top)) addCallTo: method ] 
 	ifTrue: [ 
 		profiler unknownNode addCallTo: method ].
+	(profiler nodes at: (method)) addCall.
 	profiler callStack push: method 
 ]
 

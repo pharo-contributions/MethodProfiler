@@ -44,7 +44,7 @@ PrfMethodProfiler >> addMethod: aMethod [
 { #category : #installation }
 PrfMethodProfiler >> addPackage: aPackage [
 	|classes|
-	classes := aPackage classes.
+	classes := aPackage definedClasses.
 	classes do: [ :class | self addClass: class ].
 	^self
 ]
@@ -53,8 +53,11 @@ PrfMethodProfiler >> addPackage: aPackage [
 PrfMethodProfiler >> callGraph [
 	| c edges label box localNodes|
 	c := RSCanvas new.
-	localNodes := nodes asArray copyWith: unknownNode.
+	
 	edges := Set new.
+	
+	localNodes := (nodes asArray copyWith: unknownNode) select: [:node |
+		((node timesCalled) + (node totalNumberOfCalls )) > 0].
 
 	localNodes do: [ :node | 
 		node methodCalls asSet do: [ :method | 
@@ -184,12 +187,10 @@ PrfMethodProfiler >> numberOfCallsFrom: aMethod [
 
 { #category : #counting }
 PrfMethodProfiler >> numberOfCallsTo: aMethod [
-	|count|
-	count := 0.
-	nodes do: [ :node |  
-		count := count + (node numberOfCallsTo: (aMethod unproxifiedMethod )) ].
-	count := count + (unknownNode numberOfCallsTo: (aMethod unproxifiedMethod )).
-	^count
+	nodes 
+	at: (aMethod unproxifiedMethod)
+	ifPresent: [ :node | ^node timesCalled  ]
+	ifAbsent: [ ^0 ]
 ]
 
 { #category : #lifecycle }
