@@ -1,5 +1,5 @@
 Class {
 	#name : #PrfNotProfiledError,
 	#superclass : #Exception,
-	#category : #Profiler
+	#category : #MethodProfiler
 }
