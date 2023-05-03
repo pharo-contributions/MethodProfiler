@@ -37,7 +37,7 @@ PrfMethodProfiler >> addMethod: aMethod [
 			put: (PrfMethodIntercepter forMethod: unproxifiedMethod withProfiler: self ).
 		nodes 
 			at: unproxifiedMethod 
-			put: (PrfMethodNode forMethod: unproxifiedMethod  )].
+			put: (PrfMethodNode forMethod: unproxifiedMethod withProfiler: self  )].
 	^self
 ]
 
@@ -49,45 +49,79 @@ PrfMethodProfiler >> addPackage: aPackage [
 	^self
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #ui }
 PrfMethodProfiler >> callGraph [
-	| c edges label box localNodes|
-	c := RSCanvas new.
-	
+
+	| c edges label localNodes lines graphNodes stepping layout minEdgeValue maxEdgeValue |
+	minEdgeValue := nil.
+	maxEdgeValue := nil.
+
+	localNodes := (nodes asArray copyWith: unknownNode) select: [ :node |
+		              node totalNumberOfCalls + node timesCalled > 0 ].
+
 	edges := Set new.
+	localNodes do: [ :node |
+		node methodCalls asSet do: [ :method |
+			edges add: node -> (nodes at: method) ] ].
+
+	c := RSCanvas new.
+
+	graphNodes := (localNodes collect: [ :model |
+						
+		               model -> (RSEllipse new
+			                labeled;
+			                draggable;
+			                model: model;
+			                yourself) ]) asDictionary.
+
+	lines := edges collect: [ :edge |
+		         | edgeValue |
+		         edgeValue := edge key numberOfCallsTo: edge value method.
+		         label := RSLabeled new.
+		         label location
+			         inner;
+			         middle.
+		         label text: edgeValue asString.
+		         label lowColor: Color red.
+		         RSShapeFactory arrowedLine
+			         addInteraction: label;
+			         withBorderAttachPoint;
+						model: edgeValue;
+			         color: Color black;
+			         from: (graphNodes at: edge key);
+			         to: (graphNodes at: edge value);
+			         yourself ].
+
+	c
+		addAll: graphNodes values;
+		addAll: lines.
+		
+	RSNormalizer size
+		from: 10;
+		to: 100; 
+		shapes: graphNodes values;
+		normalize: #timesCalled.
+	RSNormalizer color
+		from: (Color blue muchDarker alpha: 0.75);
+		to: (Color red alpha: 0.75);
+		shapes: graphNodes values;
+		normalize: #timesCalled.
+	RSNormalizer width
+		from: 0.5;
+		to: 4;
+		shapes: lines;
+		normalize: #yourself.
 	
-	localNodes := (nodes asArray copyWith: unknownNode) select: [:node |
-		((node timesCalled) + (node totalNumberOfCalls )) > 0].
+	(graphNodes at: unknownNode) size: 50; color: (Color green alpha: 0.75).
 
-	localNodes do: [ :node | 
-		node methodCalls asSet do: [ :method | 
-			edges add: (node -> (nodes at: method)) ] ].
-	c addAll: (RSComposite models: localNodes forEach: [:shape :model |
-    label := (RSLabel new
-        text: model asString;
-        color: Color black;
-        yourself).
-    box := RSCircle new
-          extent: label extent y @ label extent y;
-        color: Color white;
-        borderColor: Color black.
-    shape
-        add: box;
-        add: label;
-        yourself
-     ]).
-c nodes @ RSDraggable new.
+	stepping := RSForceLayoutSteppingInteraction new.
 
-c @ RSCanvasController new.
-
-RSLineBuilder arrowedLine
-    color: Color black;
-    withBorderAttachPoint;
-    shapes: c nodes;
-    useAssociations: edges.
-
-RSCircleLayout on: c nodes.
-^c
+	(layout := stepping layout)
+		length: 100;
+		charge: -1000.
+	c @ stepping.
+	c @ RSCanvasController.
+	^ c
 ]
 
 { #category : #accessing }
@@ -104,9 +138,9 @@ PrfMethodProfiler >> destroy [
 	unknownNode := nil.
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #ui }
 PrfMethodProfiler >> drawCallGraph [
-	<inspectorPresentationOrder: 1 title: 'graph'>
+	<inspectorPresentationOrder: 1 title: 'Call Graph'>
 	^ SpRoassal3InspectorPresenter new canvas: self callGraph yourself
 ]
 
@@ -145,7 +179,7 @@ PrfMethodProfiler >> initialize [
 	callStack := PrfProcessCallStack new.
 	intercepters := Dictionary new.
 	nodes := Dictionary new.
-	unknownNode := PrfMethodNode forMethod: nil.
+	unknownNode := PrfMethodNode forMethod: nil withProfiler: self.
 	profilingNow := false
 ]
 

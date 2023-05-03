@@ -21,7 +21,7 @@ PrfMethodIntercepter class >> forMethod: aMethod withProfiler: aProfiler [
 
 { #category : #accessing }
 PrfMethodIntercepter >> afterMethod [
-	profiler callStack pop
+	(profiler callStack isEmpty) ifFalse: [ profiler callStack pop ] 
 ]
 
 { #category : #accessing }
