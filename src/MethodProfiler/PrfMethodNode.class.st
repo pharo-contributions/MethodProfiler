@@ -80,12 +80,14 @@ PrfMethodNode >> neighborhoodGraph [
 	c := RSCanvas new.
 
 	graphNodes := (localNodes collect: [ :model |
-						
-		               model -> (RSEllipse new
+						|assocication|
+		            	assocication := (model -> (RSEllipse new
 			                labeled;
 			                draggable;
 			                model: model;
-			                yourself) ]) asDictionary.
+			                yourself)).
+						(model = self) ifTrue: [ assocication value borderColor: (Color green alpha: 0.75) ].
+						assocication  ]) asDictionary.
 
 	lines := edges collect: [ :edge |
 		         | edgeValue |
