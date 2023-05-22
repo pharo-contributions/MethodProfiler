@@ -3,8 +3,8 @@ Class {
 	#superclass : #MpHandler,
 	#instVars : [
 		'method',
-		'proxy',
-		'profiler'
+		'profiler',
+		'proxy'
 	],
 	#category : #MethodProfiler
 }
@@ -19,20 +19,22 @@ PrfMethodIntercepter class >> forMethod: aMethod withProfiler: aProfiler [
 	^intercepter
 ]
 
-{ #category : #accessing }
+{ #category : #evaluating }
 PrfMethodIntercepter >> afterMethod [
-	(profiler callStack isEmpty) ifFalse: [ profiler callStack pop ] 
+
+	profiler callStack isEmpty ifFalse: [ profiler callStack pop ]
 ]
 
-{ #category : #accessing }
+{ #category : #evaluating }
 PrfMethodIntercepter >> beforeMethod [
-	(profiler callStack isEmpty)
-	ifFalse: [ 
-		(profiler nodes at: (profiler callStack top)) addCallTo: method ] 
-	ifTrue: [ 
-		profiler unknownNode addCallTo: method ].
-	(profiler nodes at: (method)) addCall.
-	profiler callStack push: method 
+
+	| node |
+	node := profiler newNodeForMethod: method.
+	profiler callStack isEmpty
+		ifFalse: [ profiler callStack top addCallTo: node ]
+		ifTrue: [ profiler unknownNode addCallTo: node ].
+	node addCall.
+	profiler callStack push: node
 ]
 
 { #category : #accessing }

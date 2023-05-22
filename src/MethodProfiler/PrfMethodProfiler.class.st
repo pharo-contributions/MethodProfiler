@@ -35,9 +35,9 @@ PrfMethodProfiler >> addMethod: aMethod [
 		intercepters 
 			at: unproxifiedMethod 
 			put: (PrfMethodIntercepter forMethod: unproxifiedMethod withProfiler: self ).
-		nodes 
+		"nodes 
 			at: unproxifiedMethod 
-			put: (PrfMethodNode forMethod: unproxifiedMethod withProfiler: self  )].
+			put: (PrfMethodNode forMethod: unproxifiedMethod withProfiler: self  )"].
 	^self
 ]
 
@@ -52,17 +52,18 @@ PrfMethodProfiler >> addPackage: aPackage [
 { #category : #ui }
 PrfMethodProfiler >> callGraph [
 
-	| c edges label localNodes lines graphNodes stepping layout minEdgeValue maxEdgeValue |
+	| c edges label localNodes lines graphNodes stepping layout minEdgeValue maxEdgeValue allNodes |
 	minEdgeValue := nil.
 	maxEdgeValue := nil.
-
-	localNodes := (nodes asArray copyWith: unknownNode) select: [ :node |
+	
+	allNodes := self unknownNode allChildren.
+	localNodes := (allNodes copyWith: unknownNode) select: [ :node |
 		              node totalNumberOfCalls + node timesCalled > 0 ].
 
 	edges := Set new.
 	localNodes do: [ :node |
-		node methodCalls asSet do: [ :method |
-			edges add: node -> (nodes at: method) ] ].
+		node methodCalls do: [ :childNode |
+			edges add: node -> childNode ] ].
 
 	c := RSCanvas new.
 
@@ -114,12 +115,8 @@ PrfMethodProfiler >> callGraph [
 	
 	(graphNodes at: unknownNode) size: 50; color: (Color green alpha: 0.75).
 
-	stepping := RSForceLayoutSteppingInteraction new.
+	RSTreeLayout on: graphNodes values.
 
-	(layout := stepping layout)
-		length: 100;
-		charge: -1000.
-	c @ stepping.
 	c @ RSCanvasController.
 	^ c
 ]
@@ -140,8 +137,14 @@ PrfMethodProfiler >> destroy [
 
 { #category : #ui }
 PrfMethodProfiler >> drawCallGraph [
-	<inspectorPresentationOrder: 1 title: 'Call Graph'>
+"	<inspectorPresentationOrder: 10 title: 'Call Graph'>"
 	^ SpRoassal3InspectorPresenter new canvas: self callGraph yourself
+]
+
+{ #category : #ui }
+PrfMethodProfiler >> drawFlameGraph [
+	<inspectorPresentationOrder: 2 title: 'Flame Graph'>
+	^ SpRoassal3InspectorPresenter new canvas: self flameGraph yourself
 ]
 
 { #category : #installation }
@@ -174,6 +177,28 @@ PrfMethodProfiler >> excludePackage: aPackage [
 	^self
 ]
 
+{ #category : #ui }
+PrfMethodProfiler >> flameGraph [
+
+	| builder |
+	builder := RSFlameGraph new.
+	builder boxShape.
+	builder
+		leafWeight: [ :f | f accumulatedCalls ];
+		explore: self unknownNode
+		nesting: [ :n | n methodCalls asSet select: [ :c | c hasChildren ] ]
+		leaves: [ :n | n methodCalls asSet reject: [ :c | c hasChildren ] ].
+	builder build.
+	builder shapes
+		@ (RSPopup text: [ :f | f asString ]);
+		@ (RSHighlightable new highlightBorder:
+					 (RSBorder new color: Color black)).
+
+	^ builder canvas
+		  addInteraction: RSCanvasController new;
+		  yourself
+]
+
 { #category : #initialization }
 PrfMethodProfiler >> initialize [
 	callStack := PrfProcessCallStack new.
@@ -198,6 +223,16 @@ PrfMethodProfiler >> isProfilingMethod: aMethod [
 PrfMethodProfiler >> isProfilingNow [
 
 	^ profilingNow
+]
+
+{ #category : #installation }
+PrfMethodProfiler >> newNodeForMethod: aMethod [
+
+	| methodWithStackDepth |
+	methodWithStackDepth := aMethod name, self callStack size asString.
+	^ nodes at: methodWithStackDepth
+		ifPresent: [ :node | node ]
+		ifAbsentPut: [ PrfMethodNode forMethod: aMethod withProfiler: self ]
 ]
 
 { #category : #accessing }

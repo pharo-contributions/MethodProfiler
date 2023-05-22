@@ -11,12 +11,19 @@ Class {
 }
 
 { #category : #creation }
-PrfMethodNode class >> forMethod: aMethod  withProfiler: aProfiler [
-	|node|
+PrfMethodNode class >> forMethod: aMethod withProfiler: aProfiler [
+
+	| node |
 	node := PrfMethodNode new.
 	node method: aMethod.
 	node profiler: aProfiler.
-	^node
+	^ node
+]
+
+{ #category : #accessing }
+PrfMethodNode >> accumulatedCalls [
+
+	^ self timesCalled + (self methodCalls sum: [ :e | e accumulatedCalls ])
 ]
 
 { #category : #accessing }
@@ -29,10 +36,22 @@ PrfMethodNode >> addCallTo: aMethod [
 	methodCalls add: aMethod
 ]
 
+{ #category : #accessing }
+PrfMethodNode >> allChildren [
+	
+	^ methodCalls asSet asOrderedCollection flatCollect: [ :child | {child} , child allChildren ]
+]
+
 { #category : #ui }
 PrfMethodNode >> drawNeighborhoodGraph [
 	<inspectorPresentationOrder: 1 title: 'Neighborhood Graph'>
 	^ SpRoassal3InspectorPresenter new canvas: self neighborhoodGraph yourself
+]
+
+{ #category : #testing }
+PrfMethodNode >> hasChildren [
+
+	^ methodCalls notEmpty
 ]
 
 { #category : #initialization }
