@@ -19,9 +19,11 @@ BaselineOfMethodProfiler >> baseline: spec [
 			with: [ spec requires: #MethodProfiler ].
 			
 			spec 
-				group: #default 
+				group: #profiler 
 				with: #(MethodProfiler);
 				group: #tests
-				with: #(default MethodProfiler-Tests)
+				with: #(default MethodProfiler-Tests);
+				group: #default
+				with: #(tests)
 	]
 ]
