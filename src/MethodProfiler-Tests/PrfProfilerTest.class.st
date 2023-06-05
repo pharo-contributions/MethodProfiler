@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'profiler'
 	],
-	#category : #MethodProfiler
+	#category : #'MethodProfiler-Tests'
 }
 
 { #category : #running }
