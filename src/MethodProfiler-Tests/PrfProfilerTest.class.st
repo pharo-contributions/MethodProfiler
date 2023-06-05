@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'profiler'
 	],
-	#category : #MethodProfiler
+	#category : #'MethodProfiler-Tests'
 }
 
 { #category : #running }
@@ -99,7 +99,7 @@ PrfProfilerTest >> testNotProfiled [
 
 { #category : #tests }
 PrfProfilerTest >> testPackageExclude [
-	profiler addPackage: ('Profiler-Dummy' asPackage).
+	profiler addPackage: ('MethodProfiler-Tests' asPackage).
 	profiler excludeClass: PrfDummyClassA.
 	self deny: (profiler isProfilingMethod: PrfDummyClassA >> #foo).
 ]
@@ -112,7 +112,7 @@ PrfProfilerTest >> testPackageForbiddenDomainError [
 
 { #category : #tests }
 PrfProfilerTest >> testPackageMethodExecutionCount [
-	profiler addPackage: ('Profiler-Dummy' asPackage).
+	profiler addPackage: ('MethodProfiler-Tests' asPackage).
 	profiler start.
 	PrfDummyClassA new foo.
 	self assert: (profiler numberOfCallsTo: PrfDummyClassA >> #foo) equals: 1.
@@ -120,7 +120,7 @@ PrfProfilerTest >> testPackageMethodExecutionCount [
 
 { #category : #tests }
 PrfProfilerTest >> testPackageProfiled [
-	profiler addPackage: ('Profiler-Dummy' asPackage).
+	profiler addPackage: ('MethodProfiler-Tests' asPackage).
 	self assert: (profiler isProfilingMethod: PrfDummyClassA >> #foo).
 ]
 
