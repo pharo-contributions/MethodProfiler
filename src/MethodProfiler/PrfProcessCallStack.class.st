@@ -28,6 +28,13 @@ PrfProcessCallStack >> push: anElement [
 ]
 
 { #category : #accessing }
+PrfProcessCallStack >> size [
+
+	self value ifNil: [ ^ 0 ].
+	^ self value size
+]
+
+{ #category : #accessing }
 PrfProcessCallStack >> top [ 
 	self ensureStackIsInitialized.
 	^self value top
