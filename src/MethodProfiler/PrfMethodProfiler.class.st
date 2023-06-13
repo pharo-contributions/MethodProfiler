@@ -158,15 +158,16 @@ PrfMethodProfiler >> excludeClass: aClass [
 
 { #category : #installation }
 PrfMethodProfiler >> excludeMethod: aMethod [
-	|unproxifiedMethod|
+
+	| unproxifiedMethod |
 	unproxifiedMethod := aMethod unproxifiedMethod.
-	intercepters 
-		at: unproxifiedMethod 
-		ifPresent: [ :intercepter | 
-			intercepter uninstall.
-			intercepters removeKey: unproxifiedMethod.
-			nodes removeKey: unproxifiedMethod  ].
-	^self
+	intercepters at: unproxifiedMethod ifPresent: [ :intercepter |
+		intercepter uninstall.
+		intercepters removeKey: unproxifiedMethod.
+		(nodes keys select: [ :key |
+			 key beginsWith: aMethod unproxifiedMethod printString , '#' ])
+			do: [ :key | nodes removeKey: key ] ].
+	^ self
 ]
 
 { #category : #installation }
@@ -250,8 +251,7 @@ PrfMethodProfiler >> nodeForMethod: aMethod [
 PrfMethodProfiler >> nodeForMethod: aMethod withPrecedingNode: aNode [
 
 	| uniqueMethodName |
-	uniqueMethodName := aMethod name , '#' , self callStack size asString
-	                    , '#' , aNode nodeHash.
+	uniqueMethodName := aMethod name , '#' , aNode nodeHash.
 	^ nodes
 		  at: uniqueMethodName
 		  ifPresent: [ :node | node ]
@@ -271,18 +271,44 @@ PrfMethodProfiler >> nodes [
 
 { #category : #counting }
 PrfMethodProfiler >> numberOfCallsFrom: aMethod [
-	nodes 
-	at: (aMethod unproxifiedMethod)
-	ifPresent: [ :node | ^node totalNumberOfCalls  ]
-	ifAbsent: [ ^0 ]
+
+	aMethod ifNil: [ ^ unknownNode totalNumberOfCalls ].
+	^ (nodes keys select: [ :key |
+		   key beginsWith: aMethod unproxifiedMethod printString , '#' ])
+		  ifNotEmpty: [ :keys |
+			  (keys collect: [ :key | (nodes at: key) totalNumberOfCalls ]) sum ]
+		  ifEmpty: [ 0 ]
+]
+
+{ #category : #counting }
+PrfMethodProfiler >> numberOfCallsFrom: firstMethod to: secondMethod [
+
+	| fromNodes toNodes result |
+	firstMethod ifNil: [ fromNodes := { unknownNode } ] ifNotNil: [
+		fromNodes := (nodes keys select: [ :key |
+			              key beginsWith:
+				              firstMethod unproxifiedMethod printString , '#' ])
+			             collect: [ :key | nodes at: key ] ].
+
+	toNodes := (nodes keys select: [ :key |
+		            key beginsWith:
+			            secondMethod unproxifiedMethod printString , '#' ])
+		           collect: [ :key | nodes at: key ].
+
+	result := 0.
+	fromNodes do: [ :fromNode |  toNodes do: [ :toNode |
+			result := result + (fromNode numberOfCallsTo: toNode) ] ].
+	^result
 ]
 
 { #category : #counting }
 PrfMethodProfiler >> numberOfCallsTo: aMethod [
-	nodes 
-	at: (aMethod unproxifiedMethod)
-	ifPresent: [ :node | ^node timesCalled  ]
-	ifAbsent: [ ^0 ]
+
+	^ (nodes keys select: [ :key |
+		   key beginsWith: aMethod unproxifiedMethod printString , '#' ])
+		  ifNotEmpty: [ :keys |
+		  (keys collect: [ :key | (nodes at: key) timesCalled ]) sum ]
+		  ifEmpty: [ 0 ]
 ]
 
 { #category : #lifecycle }

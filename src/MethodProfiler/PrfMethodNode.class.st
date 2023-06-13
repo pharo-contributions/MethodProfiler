@@ -183,8 +183,8 @@ PrfMethodNode >> nodeHash: anObject [
 ]
 
 { #category : #accessing }
-PrfMethodNode >> numberOfCallsTo: aMethod [
-	aMethod ifNil: [ ^0 ] ifNotNil: [ ^methodCalls occurrencesOf: (aMethod unproxifiedMethod ) ].
+PrfMethodNode >> numberOfCallsTo: aNode [
+	aNode ifNil: [ ^0 ] ifNotNil: [ ^methodCalls occurrencesOf: aNode ].
 ]
 
 { #category : #converting }

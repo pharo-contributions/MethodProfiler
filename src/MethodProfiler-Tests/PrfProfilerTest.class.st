@@ -59,16 +59,29 @@ PrfProfilerTest >> testClassProfiled [
 
 { #category : #tests }
 PrfProfilerTest >> testComplexMethodExecutionCount [
+
 	profiler addMethod: PrfDummyClassA >> #foo.
 	profiler addMethod: PrfDummyClassA >> #bar:.
 	profiler start.
 	PrfDummyClassA new foo.
 	PrfDummyClassA new bar: true.
-	self assert: (profiler numberOfCallsTo: PrfDummyClassA >> #foo) equals: 2.
-	self assert: (profiler numberOfCallsTo: PrfDummyClassA >> #bar:) equals: 1.
-	self assert: ((profiler nodeForMethod: (PrfDummyClassA >> #bar:)) numberOfCallsTo: PrfDummyClassA >> #foo) equals: 1.
-	self assert: ((profiler unknownNode) numberOfCallsTo: PrfDummyClassA >> #foo) equals: 1.
-	self assert: ((profiler unknownNode) numberOfCallsTo: PrfDummyClassA >> #bar:) equals: 1.
+	self
+		assert: (profiler numberOfCallsTo: PrfDummyClassA >> #foo)
+		equals: 2.
+	self
+		assert: (profiler numberOfCallsTo: PrfDummyClassA >> #bar:)
+		equals: 1.
+	self
+		assert: (profiler numberOfCallsFrom: PrfDummyClassA >> #bar: to: PrfDummyClassA >> #foo)
+		equals: 1.
+	self
+		assert:
+		(profiler numberOfCallsFrom: nil to: PrfDummyClassA >> #foo)
+		equals: 1.
+	self
+		assert:
+		(profiler numberOfCallsFrom: nil to: PrfDummyClassA >> #bar:)
+		equals: 1
 ]
 
 { #category : #tests }
