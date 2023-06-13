@@ -10,20 +10,17 @@ BaselineOfMethodProfiler >> baseline: spec [
 	<baseline>
 	spec for: #common do: [
 		spec
-			baseline: #MethodProxies
+			package: 'MethodProfiler' with: [ spec requires: 'MethodProxies' ];
+			package: 'MethodProfiler-Tests'
+			with: [ spec requires: 'MethodProfiler' ].
+
+		spec
+			baseline: 'MethodProxies'
 			with: [
-				spec repository: 'github://pharo-contributions/MethodProxies/src' ];
-			package: #MethodProfiler 
-			with: [ spec requires: #MethodProxies ];
-			package: #'MethodProfiler-Tests'
-			with: [ spec requires: #MethodProfiler ].
-			
-			spec 
-				group: #profiler 
-				with: #(MethodProfiler);
-				group: #tests
-				with: #(MethodProfiler MethodProfiler-Tests);
-				group: #default
-				with: #(MethodProfiler MethodProfiler-Tests)
-	]
+			spec repository: 'github://pharo-contributions/MethodProxies/src' ].
+
+
+		spec group: 'default' with: #( 'core' 'tests' ).
+		spec group: 'core' with: #( 'MethodProfiler' ).
+		spec group: 'tests' with: #( 'MethodProfiler-Tests' ) ]
 ]
