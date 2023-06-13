@@ -5,7 +5,8 @@ Class {
 		'profiler',
 		'method',
 		'methodCalls',
-		'timesCalled'
+		'timesCalled',
+		'nodeHash'
 	],
 	#category : #MethodProfiler
 }
@@ -17,6 +18,17 @@ PrfMethodNode class >> forMethod: aMethod withProfiler: aProfiler [
 	node := PrfMethodNode new.
 	node method: aMethod.
 	node profiler: aProfiler.
+	^ node
+]
+
+{ #category : #creation }
+PrfMethodNode class >> forMethod: aMethod withProfiler: aProfiler withHash: aString [
+
+	| node |
+	node := PrfMethodNode new.
+	node method: aMethod.
+	node profiler: aProfiler.
+	node nodeHash: aString.
 	^ node
 ]
 
@@ -156,6 +168,18 @@ PrfMethodNode >> neighborhoodGraph [
 	c @ stepping.
 	c @ RSCanvasController.
 	^ c
+]
+
+{ #category : #accessing }
+PrfMethodNode >> nodeHash [
+
+	^ nodeHash
+]
+
+{ #category : #accessing }
+PrfMethodNode >> nodeHash: anObject [
+
+	nodeHash := anObject
 ]
 
 { #category : #accessing }

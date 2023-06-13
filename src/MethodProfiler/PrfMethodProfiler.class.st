@@ -137,7 +137,7 @@ PrfMethodProfiler >> destroy [
 
 { #category : #ui }
 PrfMethodProfiler >> drawCallGraph [
-"	<inspectorPresentationOrder: 10 title: 'Call Graph'>"
+ 	<inspectorPresentationOrder: 10 title: 'Call Graph'>
 	^ SpRoassal3InspectorPresenter new canvas: self callGraph yourself
 ]
 
@@ -204,7 +204,7 @@ PrfMethodProfiler >> initialize [
 	callStack := PrfProcessCallStack new.
 	intercepters := Dictionary new.
 	nodes := Dictionary new.
-	unknownNode := PrfMethodNode forMethod: nil withProfiler: self.
+	unknownNode := PrfMethodNode forMethod: nil withProfiler: self withHash: (((SHA1 new hashMessage: '') copyFrom: 1 to: 4) hex ).
 	profilingNow := false
 ]
 
@@ -237,7 +237,30 @@ PrfMethodProfiler >> newNodeForMethod: aMethod [
 
 { #category : #accessing }
 PrfMethodProfiler >> nodeForMethod: aMethod [
-	^ nodes at: (aMethod unproxifiedMethod )
+
+	self
+		deprecated: 'Use #hhh instead'
+		on: '13 June 2023'
+		in:
+		'Pharo-12.0.0+build.453.sha.9052a0c58a234477c0917d747fcb7dd2d6a05f0e (64 Bit)'.
+	^ nodes at: aMethod unproxifiedMethod
+]
+
+{ #category : #installation }
+PrfMethodProfiler >> nodeForMethod: aMethod withPrecedingNode: aNode [
+
+	| uniqueMethodName |
+	uniqueMethodName := aMethod name , '#' , self callStack size asString
+	                    , '#' , aNode nodeHash.
+	^ nodes
+		  at: uniqueMethodName
+		  ifPresent: [ :node | node ]
+		  ifAbsentPut: [
+			  PrfMethodNode
+				  forMethod: aMethod
+				  withProfiler: self
+				  withHash:
+				  ((SHA1 new hashMessage: uniqueMethodName) copyFrom: 1 to: 4) hex ]
 ]
 
 { #category : #accessing }

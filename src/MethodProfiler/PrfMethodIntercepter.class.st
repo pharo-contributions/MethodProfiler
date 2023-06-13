@@ -28,11 +28,14 @@ PrfMethodIntercepter >> afterMethod [
 { #category : #evaluating }
 PrfMethodIntercepter >> beforeMethod [
 
-	| node |
-	node := profiler newNodeForMethod: method.
-	profiler callStack isEmpty
-		ifFalse: [ profiler callStack top addCallTo: node ]
-		ifTrue: [ profiler unknownNode addCallTo: node ].
+	| node precedingNode |
+	precedingNode := profiler callStack isEmpty
+		                 ifFalse: [ profiler callStack top ]
+		                 ifTrue: [ profiler unknownNode ].
+	node := profiler
+		        nodeForMethod: method
+		        withPrecedingNode: precedingNode.
+	precedingNode addCallTo: node.
 	node addCall.
 	profiler callStack push: node
 ]
