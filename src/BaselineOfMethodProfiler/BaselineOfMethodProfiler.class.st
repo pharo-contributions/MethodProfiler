@@ -22,7 +22,7 @@ BaselineOfMethodProfiler >> baseline: spec [
 				group: #profiler 
 				with: #(MethodProfiler);
 				group: #tests
-				with: #(default MethodProfiler-Tests);
+				with: #(profiler MethodProfiler-Tests);
 				group: #default
 				with: #(tests)
 	]
