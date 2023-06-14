@@ -137,7 +137,7 @@ PrfMethodProfiler >> destroy [
 
 { #category : #ui }
 PrfMethodProfiler >> drawCallGraph [
-"	<inspectorPresentationOrder: 10 title: 'Call Graph'>"
+ 	<inspectorPresentationOrder: 10 title: 'Call Graph'>
 	^ SpRoassal3InspectorPresenter new canvas: self callGraph yourself
 ]
 
@@ -158,15 +158,16 @@ PrfMethodProfiler >> excludeClass: aClass [
 
 { #category : #installation }
 PrfMethodProfiler >> excludeMethod: aMethod [
-	|unproxifiedMethod|
+
+	| unproxifiedMethod |
 	unproxifiedMethod := aMethod unproxifiedMethod.
-	intercepters 
-		at: unproxifiedMethod 
-		ifPresent: [ :intercepter | 
-			intercepter uninstall.
-			intercepters removeKey: unproxifiedMethod.
-			nodes removeKey: unproxifiedMethod  ].
-	^self
+	intercepters at: unproxifiedMethod ifPresent: [ :intercepter |
+		intercepter uninstall.
+		intercepters removeKey: unproxifiedMethod.
+		(nodes keys select: [ :key |
+			 key beginsWith: aMethod unproxifiedMethod printString , '#' ])
+			do: [ :key | nodes removeKey: key ] ].
+	^ self
 ]
 
 { #category : #installation }
@@ -204,7 +205,7 @@ PrfMethodProfiler >> initialize [
 	callStack := PrfProcessCallStack new.
 	intercepters := Dictionary new.
 	nodes := Dictionary new.
-	unknownNode := PrfMethodNode forMethod: nil withProfiler: self.
+	unknownNode := PrfMethodNode forMethod: nil withProfiler: self withHash: (((SHA1 new hashMessage: '') copyFrom: 1 to: 4) hex ).
 	profilingNow := false
 ]
 
@@ -237,7 +238,29 @@ PrfMethodProfiler >> newNodeForMethod: aMethod [
 
 { #category : #accessing }
 PrfMethodProfiler >> nodeForMethod: aMethod [
-	^ nodes at: (aMethod unproxifiedMethod )
+
+	self
+		deprecated: 'Use #hhh instead'
+		on: '13 June 2023'
+		in:
+		'Pharo-12.0.0+build.453.sha.9052a0c58a234477c0917d747fcb7dd2d6a05f0e (64 Bit)'.
+	^ nodes at: aMethod unproxifiedMethod
+]
+
+{ #category : #installation }
+PrfMethodProfiler >> nodeForMethod: aMethod withPrecedingNode: aNode [
+
+	| uniqueMethodName |
+	uniqueMethodName := aMethod name , '#' , aNode nodeHash.
+	^ nodes
+		  at: uniqueMethodName
+		  ifPresent: [ :node | node ]
+		  ifAbsentPut: [
+			  PrfMethodNode
+				  forMethod: aMethod
+				  withProfiler: self
+				  withHash:
+				  ((SHA1 new hashMessage: uniqueMethodName) copyFrom: 1 to: 4) hex ]
 ]
 
 { #category : #accessing }
@@ -248,18 +271,44 @@ PrfMethodProfiler >> nodes [
 
 { #category : #counting }
 PrfMethodProfiler >> numberOfCallsFrom: aMethod [
-	nodes 
-	at: (aMethod unproxifiedMethod)
-	ifPresent: [ :node | ^node totalNumberOfCalls  ]
-	ifAbsent: [ ^0 ]
+
+	aMethod ifNil: [ ^ unknownNode totalNumberOfCalls ].
+	^ (nodes keys select: [ :key |
+		   key beginsWith: aMethod unproxifiedMethod printString , '#' ])
+		  ifNotEmpty: [ :keys |
+			  (keys collect: [ :key | (nodes at: key) totalNumberOfCalls ]) sum ]
+		  ifEmpty: [ 0 ]
+]
+
+{ #category : #counting }
+PrfMethodProfiler >> numberOfCallsFrom: firstMethod to: secondMethod [
+
+	| fromNodes toNodes result |
+	firstMethod ifNil: [ fromNodes := { unknownNode } ] ifNotNil: [
+		fromNodes := (nodes keys select: [ :key |
+			              key beginsWith:
+				              firstMethod unproxifiedMethod printString , '#' ])
+			             collect: [ :key | nodes at: key ] ].
+
+	toNodes := (nodes keys select: [ :key |
+		            key beginsWith:
+			            secondMethod unproxifiedMethod printString , '#' ])
+		           collect: [ :key | nodes at: key ].
+
+	result := 0.
+	fromNodes do: [ :fromNode |  toNodes do: [ :toNode |
+			result := result + (fromNode numberOfCallsTo: toNode) ] ].
+	^result
 ]
 
 { #category : #counting }
 PrfMethodProfiler >> numberOfCallsTo: aMethod [
-	nodes 
-	at: (aMethod unproxifiedMethod)
-	ifPresent: [ :node | ^node timesCalled  ]
-	ifAbsent: [ ^0 ]
+
+	^ (nodes keys select: [ :key |
+		   key beginsWith: aMethod unproxifiedMethod printString , '#' ])
+		  ifNotEmpty: [ :keys |
+		  (keys collect: [ :key | (nodes at: key) timesCalled ]) sum ]
+		  ifEmpty: [ 0 ]
 ]
 
 { #category : #lifecycle }

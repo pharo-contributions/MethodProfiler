@@ -5,7 +5,8 @@ Class {
 		'profiler',
 		'method',
 		'methodCalls',
-		'timesCalled'
+		'timesCalled',
+		'nodeHash'
 	],
 	#category : #MethodProfiler
 }
@@ -17,6 +18,17 @@ PrfMethodNode class >> forMethod: aMethod withProfiler: aProfiler [
 	node := PrfMethodNode new.
 	node method: aMethod.
 	node profiler: aProfiler.
+	^ node
+]
+
+{ #category : #creation }
+PrfMethodNode class >> forMethod: aMethod withProfiler: aProfiler withHash: aString [
+
+	| node |
+	node := PrfMethodNode new.
+	node method: aMethod.
+	node profiler: aProfiler.
+	node nodeHash: aString.
 	^ node
 ]
 
@@ -159,8 +171,20 @@ PrfMethodNode >> neighborhoodGraph [
 ]
 
 { #category : #accessing }
-PrfMethodNode >> numberOfCallsTo: aMethod [
-	aMethod ifNil: [ ^0 ] ifNotNil: [ ^methodCalls occurrencesOf: (aMethod unproxifiedMethod ) ].
+PrfMethodNode >> nodeHash [
+
+	^ nodeHash
+]
+
+{ #category : #accessing }
+PrfMethodNode >> nodeHash: anObject [
+
+	nodeHash := anObject
+]
+
+{ #category : #accessing }
+PrfMethodNode >> numberOfCallsTo: aNode [
+	aNode ifNil: [ ^0 ] ifNotNil: [ ^methodCalls occurrencesOf: aNode ].
 ]
 
 { #category : #converting }
