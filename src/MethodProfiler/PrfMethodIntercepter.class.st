@@ -22,7 +22,7 @@ PrfMethodIntercepter class >> forMethod: aMethod withProfiler: aProfiler [
 { #category : #evaluating }
 PrfMethodIntercepter >> afterMethod [
 
-	profiler callStack isEmpty ifFalse: [ profiler callStack pop ]
+	profiler callStack isEmpty ifFalse: [ profiler callStack pop exitingNode ]
 ]
 
 { #category : #evaluating }
@@ -37,7 +37,8 @@ PrfMethodIntercepter >> beforeMethod [
 		        withPrecedingNode: precedingNode.
 	precedingNode addCallTo: node.
 	node addCall.
-	profiler callStack push: node
+	profiler callStack push: node.
+	node enteringNode.
 ]
 
 { #category : #accessing }

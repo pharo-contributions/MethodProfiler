@@ -6,7 +6,9 @@ Class {
 		'method',
 		'methodCalls',
 		'timesCalled',
-		'nodeHash'
+		'nodeHash',
+		'lastTimeEntered',
+		'totalTime'
 	],
 	#category : #MethodProfiler
 }
@@ -60,6 +62,17 @@ PrfMethodNode >> drawNeighborhoodGraph [
 	^ SpRoassal3InspectorPresenter new canvas: self neighborhoodGraph yourself
 ]
 
+{ #category : #'as yet unclassified' }
+PrfMethodNode >> enteringNode [
+	lastTimeEntered := DateAndTime now
+]
+
+{ #category : #'as yet unclassified' }
+PrfMethodNode >> exitingNode [
+	totalTime := totalTime + (DateAndTime now - lastTimeEntered).
+	lastTimeEntered := nil 
+]
+
 { #category : #testing }
 PrfMethodNode >> hasChildren [
 
@@ -69,7 +82,8 @@ PrfMethodNode >> hasChildren [
 { #category : #initialization }
 PrfMethodNode >> initialize [ 
 	methodCalls := Bag new.
-	timesCalled := 0
+	timesCalled := 0.
+	totalTime := 0 seconds
 ]
 
 { #category : #accessing }
@@ -220,4 +234,10 @@ PrfMethodNode >> timesCalled [
 { #category : #accessing }
 PrfMethodNode >> totalNumberOfCalls [
 	^ methodCalls size.
+]
+
+{ #category : #accessing }
+PrfMethodNode >> totalTime [
+
+	^ totalTime
 ]

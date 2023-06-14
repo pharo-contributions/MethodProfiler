@@ -185,7 +185,7 @@ PrfMethodProfiler >> flameGraph [
 	builder := RSFlameGraph new.
 	builder boxShape.
 	builder
-		leafWeight: [ :f | f accumulatedCalls ];
+		leafWeight: [ :f | f totalTime asMicroseconds ];
 		explore: self unknownNode
 		nesting: [ :n | n methodCalls asSet select: [ :c | c hasChildren ] ]
 		leaves: [ :n | n methodCalls asSet reject: [ :c | c hasChildren ] ].
@@ -194,6 +194,11 @@ PrfMethodProfiler >> flameGraph [
 		@ (RSPopup text: [ :f | f asString ]);
 		@ (RSHighlightable new highlightBorder:
 					 (RSBorder new color: Color black)).
+	RSNormalizer color
+		from: (Color blue muchDarker alpha: 0.75);
+		to: (Color red alpha: 0.75);
+		shapes: builder shapes;
+		normalize: #timesCalled.
 
 	^ builder canvas
 		  addInteraction: RSCanvasController new;
@@ -224,27 +229,6 @@ PrfMethodProfiler >> isProfilingMethod: aMethod [
 PrfMethodProfiler >> isProfilingNow [
 
 	^ profilingNow
-]
-
-{ #category : #installation }
-PrfMethodProfiler >> newNodeForMethod: aMethod [
-
-	| methodWithStackDepth |
-	methodWithStackDepth := aMethod name, self callStack size asString.
-	^ nodes at: methodWithStackDepth
-		ifPresent: [ :node | node ]
-		ifAbsentPut: [ PrfMethodNode forMethod: aMethod withProfiler: self ]
-]
-
-{ #category : #accessing }
-PrfMethodProfiler >> nodeForMethod: aMethod [
-
-	self
-		deprecated: 'Use #hhh instead'
-		on: '13 June 2023'
-		in:
-		'Pharo-12.0.0+build.453.sha.9052a0c58a234477c0917d747fcb7dd2d6a05f0e (64 Bit)'.
-	^ nodes at: aMethod unproxifiedMethod
 ]
 
 { #category : #installation }
