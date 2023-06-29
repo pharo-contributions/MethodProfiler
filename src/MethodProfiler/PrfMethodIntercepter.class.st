@@ -15,7 +15,6 @@ PrfMethodIntercepter class >> forMethod: aMethod withProfiler: aProfiler [
 	intercepter := PrfMethodIntercepter new.
 	intercepter method: aMethod.
 	intercepter profiler: aProfiler.
-	intercepter install.
 	^intercepter
 ]
 
@@ -29,7 +28,7 @@ PrfMethodIntercepter >> afterMethod [
 PrfMethodIntercepter >> beforeMethod [
 
 	| node precedingNode |
-	thisProcess identityHash traceCr.
+	profiler callStack ensureStackIsInitialized.
 	precedingNode := profiler callStack top.
 	node := profiler
 		        nodeForMethod: method
@@ -52,10 +51,10 @@ PrfMethodIntercepter >> enable [
 
 { #category : #installation }
 PrfMethodIntercepter >> install [
-	proxy ifNil: [ 
+
+	proxy ifNil: [
 		proxy := MpMethodProxy onMethod: method handler: self.
-		proxy install.
-		proxy disable. ]
+		proxy install ]
 ]
 
 { #category : #accessing }
