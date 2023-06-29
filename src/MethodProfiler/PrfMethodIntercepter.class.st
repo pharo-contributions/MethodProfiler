@@ -22,16 +22,15 @@ PrfMethodIntercepter class >> forMethod: aMethod withProfiler: aProfiler [
 { #category : #evaluating }
 PrfMethodIntercepter >> afterMethod [
 
-	profiler callStack isEmpty ifFalse: [ profiler callStack pop exitingNode ]
+	profiler callStack pop exitingNode
 ]
 
 { #category : #evaluating }
 PrfMethodIntercepter >> beforeMethod [
 
 	| node precedingNode |
-	precedingNode := profiler callStack isEmpty
-		                 ifFalse: [ profiler callStack top ]
-		                 ifTrue: [ profiler unknownNode ].
+	thisProcess identityHash traceCr.
+	precedingNode := profiler callStack top.
 	node := profiler
 		        nodeForMethod: method
 		        withPrecedingNode: precedingNode.

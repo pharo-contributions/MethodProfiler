@@ -69,6 +69,9 @@ PrfMethodNode >> enteringNode [
 
 { #category : #'as yet unclassified' }
 PrfMethodNode >> exitingNode [
+	"Manage the case of the root unknown node"
+	lastTimeEntered ifNil: [ ^ self ].
+
 	totalTime := totalTime + (DateAndTime now - lastTimeEntered).
 	lastTimeEntered := nil 
 ]

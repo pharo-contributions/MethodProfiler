@@ -207,7 +207,7 @@ PrfMethodProfiler >> flameGraph [
 
 { #category : #initialization }
 PrfMethodProfiler >> initialize [
-	callStack := PrfProcessCallStack new.
+	callStack := PrfProcessCallStack new profiler: self.
 	intercepters := Dictionary new.
 	nodes := Dictionary new.
 	unknownNode := PrfMethodNode forMethod: nil withProfiler: self withHash: (((SHA1 new hashMessage: '') copyFrom: 1 to: 4) hex ).
