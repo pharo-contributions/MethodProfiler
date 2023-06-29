@@ -31,16 +31,10 @@ PrfProcessCallStack >> initialize [
 	stacks := IdentitySet new
 ]
 
-{ #category : #testing }
-PrfProcessCallStack >> isEmpty [ 
-	self ensureStackIsInitialized.
-	^self value isEmpty 
-]
-
 { #category : #removing }
 PrfProcessCallStack >> pop [
-	self ensureStackIsInitialized.
-	^self value pop
+	"Precondition, the process variable is already initialized"
+	^ self value pop
 ]
 
 { #category : #accessing }
@@ -64,12 +58,10 @@ PrfProcessCallStack >> push: anElement [
 { #category : #accessing }
 PrfProcessCallStack >> size [
 
-	self value ifNil: [ ^ 0 ].
 	^ self value size
 ]
 
 { #category : #accessing }
 PrfProcessCallStack >> top [ 
-	self ensureStackIsInitialized.
 	^self value top
 ]
