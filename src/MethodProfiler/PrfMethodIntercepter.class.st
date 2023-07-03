@@ -15,23 +15,21 @@ PrfMethodIntercepter class >> forMethod: aMethod withProfiler: aProfiler [
 	intercepter := PrfMethodIntercepter new.
 	intercepter method: aMethod.
 	intercepter profiler: aProfiler.
-	intercepter install.
 	^intercepter
 ]
 
 { #category : #evaluating }
 PrfMethodIntercepter >> afterMethod [
 
-	profiler callStack isEmpty ifFalse: [ profiler callStack pop exitingNode ]
+	profiler callStack pop exitingNode
 ]
 
 { #category : #evaluating }
 PrfMethodIntercepter >> beforeMethod [
 
 	| node precedingNode |
-	precedingNode := profiler callStack isEmpty
-		                 ifFalse: [ profiler callStack top ]
-		                 ifTrue: [ profiler unknownNode ].
+	profiler callStack ensureStackIsInitialized.
+	precedingNode := profiler callStack top.
 	node := profiler
 		        nodeForMethod: method
 		        withPrecedingNode: precedingNode.
@@ -53,10 +51,10 @@ PrfMethodIntercepter >> enable [
 
 { #category : #installation }
 PrfMethodIntercepter >> install [
-	proxy ifNil: [ 
+
+	proxy ifNil: [
 		proxy := MpMethodProxy onMethod: method handler: self.
-		proxy install.
-		proxy disable. ]
+		proxy install ]
 ]
 
 { #category : #accessing }

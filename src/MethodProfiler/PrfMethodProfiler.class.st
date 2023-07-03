@@ -129,7 +129,6 @@ PrfMethodProfiler >> callStack [
 
 { #category : #initialization }
 PrfMethodProfiler >> destroy [
-	intercepters do: [ :intercepter | intercepter uninstall ].
 	intercepters removeAll.
 	nodes removeAll.
 	unknownNode := nil.
@@ -207,7 +206,7 @@ PrfMethodProfiler >> flameGraph [
 
 { #category : #initialization }
 PrfMethodProfiler >> initialize [
-	callStack := PrfProcessCallStack new.
+	callStack := PrfProcessCallStack new profiler: self.
 	intercepters := Dictionary new.
 	nodes := Dictionary new.
 	unknownNode := PrfMethodNode forMethod: nil withProfiler: self withHash: (((SHA1 new hashMessage: '') copyFrom: 1 to: 4) hex ).
@@ -329,13 +328,13 @@ PrfMethodProfiler >> shouldWrap: aMethod [
 
 { #category : #lifecycle }
 PrfMethodProfiler >> start [
-	intercepters do: [ :intercepter | intercepter enable ].
+	intercepters do: [ :intercepter | intercepter install ].
 	profilingNow := true
 ]
 
 { #category : #lifecycle }
 PrfMethodProfiler >> stop [
-	intercepters do: [ :intercepter | intercepter disable ].
+	intercepters do: [ :intercepter | intercepter uninstall ].
 	profilingNow := false
 ]
 

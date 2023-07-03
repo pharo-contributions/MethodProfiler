@@ -1,24 +1,52 @@
 Class {
 	#name : #PrfProcessCallStack,
 	#superclass : #ProcessLocalVariable,
+	#instVars : [
+		'profiler',
+		'stacks'
+	],
 	#category : #MethodProfiler
 }
 
 { #category : #initialization }
 PrfProcessCallStack >> ensureStackIsInitialized [
-	self value ifNil: [ self value: Stack new ].
+	
+	"A new thread requires a stack.
+	Initialize it and store it.
+	Otherwise, the process specific variable is stored in a weak array"
+	| theStack |
+	self value ifNotNil: [ ^ self ].
+	
+	theStack := Stack new.
+	theStack push: profiler unknownNode.
+	stacks add: theStack.
+	
+	self value: theStack.
 ]
 
-{ #category : #testing }
-PrfProcessCallStack >> isEmpty [ 
-	self ensureStackIsInitialized.
-	^self value isEmpty 
+{ #category : #initialization }
+PrfProcessCallStack >> initialize [
+
+	super initialize.
+	stacks := IdentitySet new
 ]
 
 { #category : #removing }
 PrfProcessCallStack >> pop [
-	self ensureStackIsInitialized.
-	^self value pop
+	"Precondition, the process variable is already initialized"
+	^ self value pop
+]
+
+{ #category : #accessing }
+PrfProcessCallStack >> profiler [
+
+	^ profiler
+]
+
+{ #category : #accessing }
+PrfProcessCallStack >> profiler: anObject [
+
+	profiler := anObject
 ]
 
 { #category : #adding }
@@ -30,12 +58,10 @@ PrfProcessCallStack >> push: anElement [
 { #category : #accessing }
 PrfProcessCallStack >> size [
 
-	self value ifNil: [ ^ 0 ].
 	^ self value size
 ]
 
 { #category : #accessing }
 PrfProcessCallStack >> top [ 
-	self ensureStackIsInitialized.
 	^self value top
 ]
