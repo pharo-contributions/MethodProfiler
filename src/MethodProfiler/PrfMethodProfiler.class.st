@@ -129,6 +129,8 @@ PrfMethodProfiler >> callStack [
 
 { #category : #initialization }
 PrfMethodProfiler >> destroy [
+
+	intercepters do: [ :intercepter | intercepter uninstall ].
 	intercepters removeAll.
 	nodes removeAll.
 	unknownNode := nil.
