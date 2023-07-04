@@ -14,23 +14,23 @@ Class {
 }
 
 { #category : #creation }
-PrfMethodNode class >> forMethod: aMethod withProfiler: aProfiler [
-
-	| node |
-	node := PrfMethodNode new.
-	node method: aMethod.
-	node profiler: aProfiler.
-	^ node
-]
-
-{ #category : #creation }
 PrfMethodNode class >> forMethod: aMethod withProfiler: aProfiler withHash: aString [
 
 	| node |
 	node := PrfMethodNode new.
 	node method: aMethod.
-	node profiler: aProfiler.
+	node runner: aProfiler.
 	node nodeHash: aString.
+	^ node
+]
+
+{ #category : #creation }
+PrfMethodNode class >> newForMethod: aMethod withRunner: aProfiler [
+
+	| node |
+	node := PrfMethodNode new.
+	node method: aMethod.
+	node runner: aProfiler.
 	^ node
 ]
 
@@ -62,12 +62,12 @@ PrfMethodNode >> drawNeighborhoodGraph [
 	^ SpRoassal3InspectorPresenter new canvas: self neighborhoodGraph yourself
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'method flow' }
 PrfMethodNode >> enteringNode [
 	lastTimeEntered := DateAndTime now
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'method flow' }
 PrfMethodNode >> exitingNode [
 	"Manage the case of the root unknown node"
 	lastTimeEntered ifNil: [ ^ self ].
@@ -211,21 +211,21 @@ PrfMethodNode >> printString [
 ]
 
 { #category : #accessing }
-PrfMethodNode >> profiler [
+PrfMethodNode >> removeAllCalls [
+	methodCalls removeAll.
+	timesCalled := 0
+]
+
+{ #category : #accessing }
+PrfMethodNode >> runner [
 
 	^ profiler
 ]
 
 { #category : #accessing }
-PrfMethodNode >> profiler: anObject [
+PrfMethodNode >> runner: anObject [
 
 	profiler := anObject
-]
-
-{ #category : #accessing }
-PrfMethodNode >> removeAllCalls [
-	methodCalls removeAll.
-	timesCalled := 0
 ]
 
 { #category : #accessing }

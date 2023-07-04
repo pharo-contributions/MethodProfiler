@@ -2,11 +2,19 @@ Class {
 	#name : #PrfProcessCallStack,
 	#superclass : #ProcessLocalVariable,
 	#instVars : [
-		'profiler',
-		'stacks'
+		'stacks',
+		'runner'
 	],
 	#category : #MethodProfiler
 }
+
+{ #category : #'instance creation' }
+PrfProcessCallStack class >> newWithRunner: aRunner [
+
+	^ self new
+		  runner: aRunner;
+		  yourself
+]
 
 { #category : #initialization }
 PrfProcessCallStack >> ensureStackIsInitialized [
@@ -16,11 +24,9 @@ PrfProcessCallStack >> ensureStackIsInitialized [
 	Otherwise, the process specific variable is stored in a weak array"
 	| theStack |
 	self value ifNotNil: [ ^ self ].
-	
 	theStack := Stack new.
-	theStack push: profiler unknownNode.
+	theStack push: runner result rootNode.
 	stacks add: theStack.
-	
 	self value: theStack.
 ]
 
@@ -37,22 +43,22 @@ PrfProcessCallStack >> pop [
 	^ self value pop
 ]
 
-{ #category : #accessing }
-PrfProcessCallStack >> profiler [
-
-	^ profiler
-]
-
-{ #category : #accessing }
-PrfProcessCallStack >> profiler: anObject [
-
-	profiler := anObject
-]
-
 { #category : #adding }
 PrfProcessCallStack >> push: anElement [
 	self ensureStackIsInitialized.
 	^self value push: anElement
+]
+
+{ #category : #accessing }
+PrfProcessCallStack >> runner [
+
+	^ runner
+]
+
+{ #category : #accessing }
+PrfProcessCallStack >> runner: aRunner [
+
+	runner := aRunner
 ]
 
 { #category : #accessing }
