@@ -122,7 +122,7 @@ PrfMethodProfilerResult >> flameGraph [
 { #category : #initialization }
 PrfMethodProfilerResult >> initialize [ 
 	nodes := Dictionary new.
-	rootNode := PrfMethodNode forMethod: nil withProfiler: self withHash: (((SHA1 new hashMessage: '') copyFrom: 1 to: 4) hex ).
+	rootNode := PrfMethodNode forMethod: nil withResult: self withHash: (((SHA1 new hashMessage: '') copyFrom: 1 to: 4) hex ).
 ]
 
 { #category : #installation }
@@ -136,7 +136,7 @@ PrfMethodProfilerResult >> nodeForMethod: aMethod withPrecedingNode: aNode [
 		  ifAbsentPut: [
 			  PrfMethodNode
 				  forMethod: aMethod
-				  withProfiler: self
+				  withResult: self
 				  withHash:
 				  ((SHA1 new hashMessage: uniqueMethodName) copyFrom: 1 to: 4) hex ]
 ]

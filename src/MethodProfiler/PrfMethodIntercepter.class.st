@@ -12,10 +12,15 @@ Class {
 { #category : #creation }
 PrfMethodIntercepter class >> newForMethod: aMethod withRunner: aRunner [
 
-	^ PrfMethodIntercepter new
-		  method: aMethod;
-		  runner: aRunner;
-		  yourself
+	| intercepter |
+	intercepter := self new
+		               method: aMethod;
+		               runner: aRunner;
+		               yourself.
+
+	PrfMethodProfiler registerIntercepterToFinalize: intercepter.
+
+	^ intercepter
 ]
 
 { #category : #evaluating }
@@ -30,14 +35,10 @@ PrfMethodIntercepter >> beforeMethod [
 	runner enterMethod: method
 ]
 
-{ #category : #accessing }
-PrfMethodIntercepter >> disable [
-	proxy isEnabled: false.
-]
+{ #category : #finalization }
+PrfMethodIntercepter >> finalize [
+	self uninstall
 
-{ #category : #accessing }
-PrfMethodIntercepter >> enable [
-	proxy isEnabled: true.
 ]
 
 { #category : #installation }

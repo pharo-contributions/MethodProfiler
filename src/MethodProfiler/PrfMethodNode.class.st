@@ -2,35 +2,25 @@ Class {
 	#name : #PrfMethodNode,
 	#superclass : #Object,
 	#instVars : [
-		'profiler',
 		'method',
 		'methodCalls',
 		'timesCalled',
 		'nodeHash',
 		'lastTimeEntered',
-		'totalTime'
+		'totalTime',
+		'result'
 	],
 	#category : #MethodProfiler
 }
 
 { #category : #creation }
-PrfMethodNode class >> forMethod: aMethod withProfiler: aProfiler withHash: aString [
+PrfMethodNode class >> forMethod: aMethod withResult: aResultObject withHash: aString [
 
 	| node |
 	node := PrfMethodNode new.
 	node method: aMethod.
-	node runner: aProfiler.
+	node result: aResultObject.
 	node nodeHash: aString.
-	^ node
-]
-
-{ #category : #creation }
-PrfMethodNode class >> newForMethod: aMethod withRunner: aProfiler [
-
-	| node |
-	node := PrfMethodNode new.
-	node method: aMethod.
-	node runner: aProfiler.
 	^ node
 ]
 
@@ -114,7 +104,7 @@ PrfMethodNode >> neighborhoodGraph [
 	minEdgeValue := nil.
 	maxEdgeValue := nil.
 
-	localNodes := (profiler nodes asArray copyWith: (profiler unknownNode)) select: [ :node |
+	localNodes := (result nodes asArray copyWith: (result unknownNode)) select: [ :node |
 		              (self = node) or: ((node numberOfCallsTo: method) + (self numberOfCallsTo: (node method)) > 0) ].
 
 	edges := Set new.
@@ -175,7 +165,7 @@ PrfMethodNode >> neighborhoodGraph [
 		shapes: lines;
 		normalize: #yourself.
 	
-	graphNodes at: (profiler unknownNode) ifPresent: [ :root | root size: 50; color: (Color green alpha: 0.75). ].
+	graphNodes at: (result unknownNode) ifPresent: [ :root | root size: 50; color: (Color green alpha: 0.75). ].
 
 	stepping := RSForceLayoutSteppingInteraction new.
 
@@ -217,15 +207,9 @@ PrfMethodNode >> removeAllCalls [
 ]
 
 { #category : #accessing }
-PrfMethodNode >> runner [
+PrfMethodNode >> result: anObject [
 
-	^ profiler
-]
-
-{ #category : #accessing }
-PrfMethodNode >> runner: anObject [
-
-	profiler := anObject
+	result := anObject
 ]
 
 { #category : #accessing }

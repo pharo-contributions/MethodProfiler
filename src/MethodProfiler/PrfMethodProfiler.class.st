@@ -4,8 +4,22 @@ Class {
 	#instVars : [
 		'methods'
 	],
+	#classVars : [
+		'FinalizationReg'
+	],
 	#category : #MethodProfiler
 }
+
+{ #category : #'class initialization' }
+PrfMethodProfiler class >> initialize [ 
+	FinalizationReg := FinalizationRegistry new. 
+]
+
+{ #category : #'class initialization' }
+PrfMethodProfiler class >> registerIntercepterToFinalize: anIntercepter [
+	
+	FinalizationReg add: anIntercepter
+]
 
 { #category : #installation }
 PrfMethodProfiler class >> shouldWrap: aMethod [

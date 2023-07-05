@@ -50,6 +50,12 @@ PrfProcessCallStack >> push: anElement [
 ]
 
 { #category : #accessing }
+PrfProcessCallStack >> results [
+
+	^ runner
+]
+
+{ #category : #accessing }
 PrfProcessCallStack >> runner [
 
 	^ runner
