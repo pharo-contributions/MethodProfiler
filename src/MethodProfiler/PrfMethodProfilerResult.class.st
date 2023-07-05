@@ -99,7 +99,7 @@ PrfMethodProfilerResult >> flameGraph [
 	builder := RSFlameGraph new.
 	builder boxShape.
 	builder
-		leafWeight: [ :f | f totalTime asMicroseconds ];
+		weight: [ :f | f model totalTime asMicroseconds ];
 		explore: rootNode
 		nesting: [ :n | n methodCalls asSet select: [ :c | c hasChildren ] ]
 		leaves: [ :n | n methodCalls asSet reject: [ :c | c hasChildren ] ].

@@ -2,7 +2,9 @@ Class {
 	#name : #PrfMethodProfiler,
 	#superclass : #Object,
 	#instVars : [
-		'methods'
+		'methods',
+		'runners',
+		'lastRunner'
 	],
 	#classVars : [
 		'FinalizationReg'
@@ -13,12 +15,6 @@ Class {
 { #category : #'class initialization' }
 PrfMethodProfiler class >> initialize [ 
 	FinalizationReg := FinalizationRegistry new. 
-]
-
-{ #category : #'class initialization' }
-PrfMethodProfiler class >> registerIntercepterToFinalize: anIntercepter [
-	
-	FinalizationReg add: anIntercepter
 ]
 
 { #category : #installation }
@@ -61,6 +57,19 @@ PrfMethodProfiler >> addPackage: aPackage [
 	^self
 ]
 
+{ #category : #'as yet unclassified' }
+PrfMethodProfiler >> createRunner [
+
+	lastRunner ifNotNil: [
+		lastRunner isProfilingNow ifTrue: [
+			^ Error signal: 'The last profiling is still running' ].
+		lastRunner destroy ].
+
+	lastRunner := PrfMethodProfilerRunner newForMethods: methods.
+	runners add: lastRunner.
+	^ lastRunner
+]
+
 { #category : #installation }
 PrfMethodProfiler >> excludeClass: aClass [
 	|methods|
@@ -88,11 +97,18 @@ PrfMethodProfiler >> excludePackage: aPackage [
 	^self
 ]
 
+{ #category : #'as yet unclassified' }
+PrfMethodProfiler >> finalize [
+
+	runners do: [ :runner | runner destroy ]
+]
+
 { #category : #initialization }
 PrfMethodProfiler >> initialize [
+
+	FinalizationReg add: self.
 	methods := Set new.
-	
-	
+	runners := Set new
 ]
 
 { #category : #installation }
@@ -103,5 +119,5 @@ PrfMethodProfiler >> isProfilingMethod: aMethod [
 
 { #category : #accessing }
 PrfMethodProfiler >> profile: aBlock [
-	^(PrfMethodProfilerRunner newForMethods: methods) profile: aBlock
+	^self createRunner profile: aBlock
 ]

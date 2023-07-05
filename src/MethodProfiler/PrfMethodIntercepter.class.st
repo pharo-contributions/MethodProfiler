@@ -12,15 +12,10 @@ Class {
 { #category : #creation }
 PrfMethodIntercepter class >> newForMethod: aMethod withRunner: aRunner [
 
-	| intercepter |
-	intercepter := self new
-		               method: aMethod;
-		               runner: aRunner;
-		               yourself.
-
-	PrfMethodProfiler registerIntercepterToFinalize: intercepter.
-
-	^ intercepter
+	^ self new
+		  method: aMethod;
+		  runner: aRunner;
+		  yourself
 ]
 
 { #category : #evaluating }
@@ -33,12 +28,6 @@ PrfMethodIntercepter >> afterMethod [
 PrfMethodIntercepter >> beforeMethod [
 
 	runner enterMethod: method
-]
-
-{ #category : #finalization }
-PrfMethodIntercepter >> finalize [
-	self uninstall
-
 ]
 
 { #category : #installation }

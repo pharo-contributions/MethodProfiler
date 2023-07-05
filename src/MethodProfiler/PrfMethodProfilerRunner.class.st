@@ -12,9 +12,10 @@ Class {
 
 { #category : #'instance creation' }
 PrfMethodProfilerRunner class >> newForMethods: aSetOfMethods [
-	
-	^ self new addMethods: aSetOfMethods; yourself 
-	
+
+	^ self new
+		  addMethods: aSetOfMethods;
+		  yourself
 ]
 
 { #category : #adding }
