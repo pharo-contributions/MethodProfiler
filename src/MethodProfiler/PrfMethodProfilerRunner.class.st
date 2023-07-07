@@ -14,14 +14,8 @@ Class {
 PrfMethodProfilerRunner class >> newForMethods: aSetOfMethods [
 
 	^ self new
-		  addMethods: aSetOfMethods;
+		  methods: aSetOfMethods;
 		  yourself
-]
-
-{ #category : #adding }
-PrfMethodProfilerRunner >> addMethods: aSetOfMethods [
-	(aSetOfMethods collect: [ :method | method unproxifiedMethod ]) do: [
-		:method | intercepters at: method put: (PrfMethodIntercepter newForMethod: method withRunner: self)]
 ]
 
 { #category : #initialization }
@@ -67,11 +61,20 @@ PrfMethodProfilerRunner >> isProfilingNow [
 	^ profilingNow
 ]
 
+{ #category : #adding }
+PrfMethodProfilerRunner >> methods: aSetOfMethods [
+	(aSetOfMethods collect: [ :method | method unproxifiedMethod ]) do: [
+		:method | intercepters at: method put: (PrfMethodIntercepter newForMethod: method withRunner: self)].
+	result methods: aSetOfMethods 
+]
+
 { #category : #lifecycle }
 PrfMethodProfilerRunner >> profile: aBlock [
-
+	
+	result mainProcess: thisProcess.
 	self start.
 	aBlock ensure: [ self stop ].
+	result buildCallGraph.
 	^ result
 ]
 

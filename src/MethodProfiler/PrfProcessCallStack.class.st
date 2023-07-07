@@ -25,7 +25,7 @@ PrfProcessCallStack >> ensureStackIsInitialized [
 	| theStack |
 	self value ifNotNil: [ ^ self ].
 	theStack := Stack new.
-	theStack push: runner result rootNode.
+	theStack push: runner result localRootNode.
 	stacks add: theStack.
 	self value: theStack.
 ]

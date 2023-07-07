@@ -2,31 +2,62 @@ Class {
 	#name : #PrfMethodProfilerResult,
 	#superclass : #Object,
 	#instVars : [
+		'methods',
 		'nodes',
-		'rootNode'
+		'rootNodes',
+		'mainProcess',
+		'rootGraphNodes',
+		'graphNodes'
 	],
 	#category : #MethodProfiler
 }
 
+{ #category : #accessing }
+PrfMethodProfilerResult >> buildCallGraph [
+	| compactionDictionary |
+	
+	graphNodes := Dictionary new.
+	rootGraphNodes := IdentityDictionary new.
+	compactionDictionary := Dictionary new.
+
+	methods do: [ :method |
+		|oldNodes replacementNode|
+		oldNodes := self nodesForMethod: method.
+		replacementNode := PrfCompactMethodNode
+				 forMethod: method
+				 withResult: self
+				 compact: oldNodes.
+		graphNodes at: method name put: replacementNode.
+		oldNodes do: [ :node | compactionDictionary at: node put: replacementNode ] ].
+
+	rootNodes do: [ :root |
+		| newRoot |
+		newRoot := root copy.
+		graphNodes
+			at: 'Root#' , newRoot process identityHash hex
+			put: newRoot.
+		rootGraphNodes at: newRoot process put: newRoot ].
+	
+	graphNodes do: [ :node | node curateCallsAfterCompaction: compactionDictionary ]
+]
+
 { #category : #ui }
 PrfMethodProfilerResult >> callGraph [
 
-	| c edges label localNodes lines graphNodes stepping layout minEdgeValue maxEdgeValue allNodes |
+	| c edges label lines graphNodes stepping layout minEdgeValue maxEdgeValue allNodes |
 	minEdgeValue := nil.
 	maxEdgeValue := nil.
 	
-	allNodes := rootNode allChildren.
-	localNodes := (allNodes copyWith: rootNode) select: [ :node |
-		              node totalNumberOfCalls + node timesCalled > 0 ].
+	allNodes := self graphRootNode allChildrenAndSelf.
 
 	edges := Set new.
-	localNodes do: [ :node |
+	allNodes do: [ :node |
 		node methodCalls do: [ :childNode |
 			edges add: node -> childNode ] ].
 
 	c := RSCanvas new.
 
-	graphNodes := (localNodes collect: [ :model |
+	graphNodes := (allNodes collect: [ :model |
 						
 		               model -> (RSEllipse new
 			                labeled;
@@ -36,7 +67,7 @@ PrfMethodProfilerResult >> callGraph [
 
 	lines := edges collect: [ :edge |
 		         | edgeValue |
-		         edgeValue := edge key numberOfCallsTo: edge value method.
+		         edgeValue := edge key numberOfCallsTo: edge value.
 		         label := RSLabeled new.
 		         label location
 			         inner;
@@ -60,7 +91,7 @@ PrfMethodProfilerResult >> callGraph [
 		from: 10;
 		to: 100; 
 		shapes: graphNodes values;
-		normalize: #timesCalled.
+		normalize: #timesCalled .
 	RSNormalizer color
 		from: (Color blue muchDarker alpha: 0.75);
 		to: (Color red alpha: 0.75);
@@ -72,7 +103,7 @@ PrfMethodProfilerResult >> callGraph [
 		shapes: lines;
 		normalize: #yourself.
 	
-	(graphNodes at: rootNode) size: 50; color: (Color green alpha: 0.75).
+	(graphNodes at: self graphRootNode) size: 50; color: (Color green alpha: 0.75).
 
 	RSTreeLayout on: graphNodes values.
 
@@ -100,7 +131,7 @@ PrfMethodProfilerResult >> flameGraph [
 	builder boxShape.
 	builder
 		weight: [ :f | f model totalTime asMicroseconds ];
-		explore: rootNode
+		explore: self rootNode
 		nesting: [ :n | n methodCalls asSet select: [ :c | c hasChildren ] ]
 		leaves: [ :n | n methodCalls asSet reject: [ :c | c hasChildren ] ].
 	builder build.
@@ -119,26 +150,69 @@ PrfMethodProfilerResult >> flameGraph [
 		  yourself
 ]
 
+{ #category : #accessing }
+PrfMethodProfilerResult >> graphRootNode [
+	
+	^self graphRootNodeForProcess: mainProcess
+]
+
+{ #category : #counting }
+PrfMethodProfilerResult >> graphRootNodeForProcess: aProcess [
+
+	^ rootGraphNodes at: aProcess ifPresent: [ :node | node ]
+]
+
+{ #category : #accessing }
+PrfMethodProfilerResult >> graphRootNodes [
+
+	^ rootNodes
+]
+
 { #category : #initialization }
 PrfMethodProfilerResult >> initialize [ 
 	nodes := Dictionary new.
-	rootNode := PrfMethodNode forMethod: nil withResult: self withHash: (((SHA1 new hashMessage: '') copyFrom: 1 to: 4) hex ).
+	rootNodes := IdentityDictionary new.
+	graphNodes := Dictionary new.
+	rootGraphNodes := IdentityDictionary new.
+]
+
+{ #category : #counting }
+PrfMethodProfilerResult >> localGraphRootNode [
+
+	^self graphRootNodeForProcess: thisProcess
+]
+
+{ #category : #counting }
+PrfMethodProfilerResult >> localRootNode [
+
+	^self rootNodeForProcess: thisProcess
+]
+
+{ #category : #accessing }
+PrfMethodProfilerResult >> mainProcess: anObject [
+
+	mainProcess := anObject
+]
+
+{ #category : #accessing }
+PrfMethodProfilerResult >> methods: anObject [
+
+	methods := anObject
 ]
 
 { #category : #installation }
 PrfMethodProfilerResult >> nodeForMethod: aMethod withPrecedingNode: aNode [
 
-	| uniqueMethodName |
-	uniqueMethodName := aMethod name , '#' , aNode nodeHash.
+	| uniqueNodeName |
+	uniqueNodeName := aMethod name , '#' , aNode nodeHash hex.
 	^ nodes
-		  at: uniqueMethodName
+		  at: uniqueNodeName
 		  ifPresent: [ :node | node ]
 		  ifAbsentPut: [
-			  PrfMethodNode
+			  PrfTreeMethodNode 
 				  forMethod: aMethod
 				  withResult: self
-				  withHash:
-				  ((SHA1 new hashMessage: uniqueMethodName) copyFrom: 1 to: 4) hex ]
+				  withHash: (SHA1 hashMessage: uniqueNodeName) ]
 ]
 
 { #category : #accessing }
@@ -148,49 +222,76 @@ PrfMethodProfilerResult >> nodes [
 ]
 
 { #category : #counting }
+PrfMethodProfilerResult >> nodesForMethod: aMethod [
+
+	^ (nodes keys select: [ :key |
+		   key beginsWith: aMethod unproxifiedMethod name , '#' ]) collect: [
+		  :key | nodes at: key ]
+]
+
+{ #category : #counting }
 PrfMethodProfilerResult >> numberOfCallsFrom: aMethod [
 
-	aMethod ifNil: [ ^ rootNode totalNumberOfCalls ].
-	^ (nodes keys select: [ :key |
-		   key beginsWith: aMethod unproxifiedMethod printString , '#' ])
-		  ifNotEmpty: [ :keys |
-			  (keys collect: [ :key | (nodes at: key) totalNumberOfCalls ]) sum ]
-		  ifEmpty: [ 0 ]
+	aMethod ifNil: [ ^ self graphRootNode totalNumberOfCalls ].
+
+	^ graphNodes
+		  at: aMethod name
+		  ifPresent: [ :node | node totalNumberOfCalls ]
+		  ifAbsent: [ 0 ]
 ]
 
 { #category : #counting }
 PrfMethodProfilerResult >> numberOfCallsFrom: firstMethod to: secondMethod [
 
-	| fromNodes toNodes result |
-	firstMethod ifNil: [ fromNodes := { rootNode } ] ifNotNil: [
-		fromNodes := (nodes keys select: [ :key |
-			              key beginsWith:
-				              firstMethod unproxifiedMethod printString , '#' ])
-			             collect: [ :key | nodes at: key ] ].
+	| fromNode toNode |
+	firstMethod
+		ifNil: [ fromNode := self graphRootNode. ]
+		ifNotNil: [
+		fromNode := graphNodes at: firstMethod name ifAbsent: [ ^ 0 ] ].
 
-	toNodes := (nodes keys select: [ :key |
-		            key beginsWith:
-			            secondMethod unproxifiedMethod printString , '#' ])
-		           collect: [ :key | nodes at: key ].
+	toNode := graphNodes at: secondMethod name ifAbsent: [ ^ 0 ].
 
-	result := 0.
-	fromNodes do: [ :fromNode |  toNodes do: [ :toNode |
-			result := result + (fromNode numberOfCallsTo: toNode) ] ].
-	^result
+
+	^ fromNode numberOfCallsTo: toNode 
 ]
 
 { #category : #counting }
 PrfMethodProfilerResult >> numberOfCallsTo: aMethod [
 
-	^ (nodes keys select: [ :key |
-		   key beginsWith: aMethod unproxifiedMethod printString , '#' ])
-		  ifNotEmpty: [ :keys |
-		  (keys collect: [ :key | (nodes at: key) timesCalled ]) sum ]
-		  ifEmpty: [ 0 ]
+	aMethod ifNil: [ ^ self graphRootNode timesCalled ].
+
+	^ graphNodes
+		  at: aMethod name
+		  ifPresent: [ :node | node timesCalled ]
+		  ifAbsent: [ 0 ]
 ]
 
 { #category : #accessing }
 PrfMethodProfilerResult >> rootNode [
+	
+	^self rootNodeForProcess: mainProcess
+]
 
-	^ rootNode
+{ #category : #counting }
+PrfMethodProfilerResult >> rootNodeForProcess: aProcess [
+
+	| newNode uniqueNodeName |
+	rootNodes at: aProcess ifPresent: [ :node | ^ node ].
+
+	uniqueNodeName := 'Root#' , aProcess identityHash hex.
+
+	newNode := PrfRootNode
+		           forProcess: aProcess
+		           withResult: self
+		           withHash: (SHA1 hashMessage: uniqueNodeName).
+	rootNodes at: aProcess put: newNode.
+	nodes at: uniqueNodeName put: newNode.
+
+	^ newNode
+]
+
+{ #category : #accessing }
+PrfMethodProfilerResult >> rootNodes [
+
+	^ rootNodes
 ]
