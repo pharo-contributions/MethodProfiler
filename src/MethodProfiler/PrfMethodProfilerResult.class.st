@@ -44,7 +44,8 @@ PrfMethodProfilerResult >> buildCallGraph [
 { #category : #ui }
 PrfMethodProfilerResult >> callGraph [
 
-	| c edges label lines graphNodes stepping layout minEdgeValue maxEdgeValue allNodes |
+	| c edges label roassalEdges roassalNodes minEdgeValue maxEdgeValue allNodes stepping layout |
+
 	minEdgeValue := nil.
 	maxEdgeValue := nil.
 	
@@ -57,7 +58,7 @@ PrfMethodProfilerResult >> callGraph [
 
 	c := RSCanvas new.
 
-	graphNodes := (allNodes collect: [ :model |
+	roassalNodes := (allNodes collect: [ :model |
 						
 		               model -> (RSEllipse new
 			                labeled;
@@ -65,7 +66,7 @@ PrfMethodProfilerResult >> callGraph [
 			                model: model;
 			                yourself) ]) asDictionary.
 
-	lines := edges collect: [ :edge |
+	roassalEdges := edges collect: [ :edge |
 		         | edgeValue |
 		         edgeValue := edge key numberOfCallsTo: edge value.
 		         label := RSLabeled new.
@@ -79,33 +80,36 @@ PrfMethodProfilerResult >> callGraph [
 			         withBorderAttachPoint;
 						model: edgeValue;
 			         color: Color black;
-			         from: (graphNodes at: edge key);
-			         to: (graphNodes at: edge value);
+			         from: (roassalNodes at: edge key);
+			         to: (roassalNodes at: edge value);
 			         yourself ].
 
 	c
-		addAll: graphNodes values;
-		addAll: lines.
+		addAll: roassalNodes values;
+		addAll: roassalEdges.
 		
 	RSNormalizer size
 		from: 10;
 		to: 100; 
-		shapes: graphNodes values;
+		shapes: roassalNodes values;
 		normalize: #timesCalled .
 	RSNormalizer color
 		from: (Color blue muchDarker alpha: 0.75);
 		to: (Color red alpha: 0.75);
-		shapes: graphNodes values;
+		shapes: roassalNodes values;
 		normalize: #timesCalled.
 	RSNormalizer width
 		from: 0.5;
 		to: 4;
-		shapes: lines;
+		shapes: roassalEdges;
 		normalize: #yourself.
 	
-	(graphNodes at: self graphRootNode) size: 50; color: (Color green alpha: 0.75).
+	(roassalNodes at: self graphRootNode) size: 50; color: (Color green alpha: 0.75).
 
-	RSTreeLayout on: graphNodes values.
+	RSForceBasedLayout new
+		length: 100;
+		charge: -1000;
+		on: roassalNodes values.
 
 	c @ RSCanvasController.
 	^ c
