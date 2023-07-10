@@ -3,50 +3,31 @@ Class {
 	#superclass : #MpHandler,
 	#instVars : [
 		'method',
-		'profiler',
-		'proxy'
+		'proxy',
+		'runner'
 	],
 	#category : #MethodProfiler
 }
 
 { #category : #creation }
-PrfMethodIntercepter class >> forMethod: aMethod withProfiler: aProfiler [
-	|intercepter|
-	intercepter := PrfMethodIntercepter new.
-	intercepter method: aMethod.
-	intercepter profiler: aProfiler.
-	^intercepter
+PrfMethodIntercepter class >> newForMethod: aMethod withRunner: aRunner [
+
+	^ self new
+		  method: aMethod;
+		  runner: aRunner;
+		  yourself
 ]
 
 { #category : #evaluating }
 PrfMethodIntercepter >> afterMethod [
 
-	profiler callStack pop exitingNode
+	runner exitMethod: method
 ]
 
 { #category : #evaluating }
 PrfMethodIntercepter >> beforeMethod [
 
-	| node precedingNode |
-	profiler callStack ensureStackIsInitialized.
-	precedingNode := profiler callStack top.
-	node := profiler
-		        nodeForMethod: method
-		        withPrecedingNode: precedingNode.
-	precedingNode addCallTo: node.
-	node addCall.
-	profiler callStack push: node.
-	node enteringNode.
-]
-
-{ #category : #accessing }
-PrfMethodIntercepter >> disable [
-	proxy isEnabled: false.
-]
-
-{ #category : #accessing }
-PrfMethodIntercepter >> enable [
-	proxy isEnabled: true.
+	runner enterMethod: method
 ]
 
 { #category : #installation }
@@ -70,21 +51,21 @@ PrfMethodIntercepter >> method: anObject [
 ]
 
 { #category : #accessing }
-PrfMethodIntercepter >> profiler [
-
-	^ profiler
-]
-
-{ #category : #accessing }
-PrfMethodIntercepter >> profiler: anObject [
-
-	profiler := anObject
-]
-
-{ #category : #accessing }
 PrfMethodIntercepter >> proxy [
 
 	^ proxy
+]
+
+{ #category : #accessing }
+PrfMethodIntercepter >> runner [
+
+	^ runner
+]
+
+{ #category : #accessing }
+PrfMethodIntercepter >> runner: anObject [
+
+	runner := anObject
 ]
 
 { #category : #installation }
