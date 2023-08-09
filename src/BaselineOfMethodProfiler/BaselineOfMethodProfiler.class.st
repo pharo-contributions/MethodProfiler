@@ -23,5 +23,10 @@ BaselineOfMethodProfiler >> baseline: spec [
 		spec
 			group: 'default' with: #( 'core' 'tests' );
 			group: 'core' with: #( 'MethodProfiler' );
-			group: 'tests' with: #( 'MethodProfiler-Tests' ) ]
+			group: 'tests' with: #( 'MethodProfiler-Tests' ) ].
+		
+	spec for: #'pharo11.x' do: [ 
+		spec
+			baseline: 'MethodProxies'
+			with: [ spec repository: 'github://pharo-contributions/MethodProxies:pharo11' ]]
 ]
