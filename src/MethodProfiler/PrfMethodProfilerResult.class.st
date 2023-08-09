@@ -181,15 +181,9 @@ PrfMethodProfilerResult >> initialize [
 ]
 
 { #category : #counting }
-PrfMethodProfilerResult >> localGraphRootNode [
-
-	^self graphRootNodeForProcess: thisProcess
-]
-
-{ #category : #counting }
 PrfMethodProfilerResult >> localRootNode [
 
-	^self rootNodeForProcess: thisProcess
+	^self rootNodeForProcess: Processor activeProcess
 ]
 
 { #category : #accessing }

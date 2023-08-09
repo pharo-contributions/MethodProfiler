@@ -71,7 +71,7 @@ PrfMethodProfilerRunner >> methods: aSetOfMethods [
 { #category : #lifecycle }
 PrfMethodProfilerRunner >> profile: aBlock [
 	
-	result mainProcess: thisProcess.
+	result mainProcess: Processor activeProcess.
 	self start.
 	aBlock ensure: [ self stop ].
 	result buildCallGraph.
